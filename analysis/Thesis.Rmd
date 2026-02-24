@@ -1,0 +1,295 @@
+---
+title: "Methodology, Data and Descriptives"
+author: "Ananya Mazumder"
+date: "2025-11-07"
+output: html_document
+code_folding: hide
+---
+
+While there exists in the literature many studies looking at casual associations between cash transfers and women’s empowerment, causal literature is rather sparser. Without casual estimates however, understanding the effects of a cash transfer can be difficult, particularly in scenarios where households may be beneficiaries to many different kinds of schemes, and as selection into application for the schemes itself may be an indicator of empowerment. Thus, it becomes necessary to follow a quasi-experimental approach, and exploit the pilot nature of the program in order to isolate its effects. Although the program was slated to begin in 2011, due to delays in implementation, it is generally acknowledged that the program only really started in 2012 (von Haaren and Klonner, 2021). Hence, eligibility for the pilot program would begin in 2012, and would continue till 2017, when the program became nationwide (PMMVY, insert ref). 
+The empirical design used in the aforementioned paper is adopted from Ghosh and Kochar (2018) who aimed to utilize the comparison across eligible and ineligible birth cohorts in treatment and district areas to examine effects on mother and child health. They also bring up the very important drawback in the design which is program compliance: neither von Haaren and Klonner nor Agarwal and Katewa address this in their subsequent papers, assuming that either cohort eligibility or program eligibility predict compliance. There may be several ways to include program compliance also into the design, as I have chosen to do, which is to also look at women above the age of 21, as these women would had to have been either 19 years of age or above to participate. This does not fully remediate the question of whether there was some fuzzy compliance i.e. whether age was strictly adhered to when it came to doling out program benefits. 
+In order to parse out the effects of the cash transfer, I am conducting a differences-in-differences analysis, along the lines of Agarwal and Katewa (2024). The first difference would be between eligible women and ineligible women in the districts below, and the second would be between treated and control districts (as identified by von Haaren and Klonner, 2021). I am extending their approach by looking also at men’s attitudes towards decision-making and IPV, and also by utilizing a new dataset, namely the DHS 2019-21 data. The authors did not use this dataset as they were considering a policy disruption (i.e. the IGMSY becoming nationwide in 2017). Since I am looking at longer-term effects of the cash transfer on women who received the transfer between 2012-2016, the policy disruption should not (in cases where eligibility is in fact, restricted only to first birth) Additionally, effects would be an estimation of Intent-to-treat, as I do not have precise data on who opted for the scheme. Moreover, I am restricting eligibility to women who gave birth to either their first or second child between 2012-2016 i.e. program years, hence excluding women who might have benefited past 2019. 
+Furthermore, I would also exclude the states of Odisha, Madhya Pradesh, Tamil Nadu and Maharashtra, as they have similar schemes at the state level. I am also excluding the Union Territories of Andaman and Nicobar, Ladakh, Daman & Diu, Lakshwadeep Islands, Chandigarh, Puducherry, Jammu and Kashmir. Nagaland is also excluded, as the district borders in the DHS were not compliant with the DHLS, which was used by von Haaren and Klonner (2020) to match districts originally.  The “low”, “medium” and “high” classifications refer to the grouping of these districts based upon their composite scores across various socioeconomic indicators. The scores were in turn used to find control districts in neighboring regions, and this setup works because the pilot program was not aimed at low-performing regions only—rather, aimed towards a group that would be representative of the country as a whole. 
+
+Regression Equation: same as Agarwal & Katewa 
+
+Yidst = αd + β1(treated_districtd*eligibility_statusit) + (λs*eligibility_status) + treated_district + χ(Xi)+γ(Xh)+ δihdst (1) 
+
+Where: B1 is the coefficient of interest, or the one capturing the interaction effect between the treated district and the eligibility status, also λs*eligibility_status represents state-specific time trends. Eligibility status is a woman of Age 21 or above who gave birth to her first child between 2012-2016 or  a woman who gave birth to her second child during this same time period. Ineligibility is correspondingly, a woman of the same age who gave birth to either her first or second child between 2005-2009. This gives me a sample of four years both ways. 
+Individual level controls include woman’s/man's age, square of woman’s/man's age, woman’s/man's education, woman’s/man's height and weights, age of woman at the first marriage, relative education of woman with respect to husband, husband’s education, and frequency of alcohol consumption by husband/partner. Household level controls include age of household head, sex of the household head, number of members in the household, number of children below 5 years in the household, household’s wealth index within a state, urban/rural residence, whether the household belongs to the SC (which in the DHS is coded as ethnicity), whether the household is poor in terms of the wealth index in the NHFS sample, household’s relative wealth based on the assets owned. 
+Empowerment in this thesis would be looked at through various lenses, including decision-making, economic, sexual and reproductive rights and physical mobility. Accordingly, the outcomes looked at include woman's participation in decision making regarding various decisions in the household and with regard to her own mobility, women's economic means, healthcare practises and reproductive rights, in addition to her own attitudes towards violence. As established earlier in the introduction and literature review, an important key component of women's empowerment is the attitude of men. Subsequently, outcomes with regards to this include men's attitudes towards decision-making, and violence towards one's spouse.  
+
+````{r first descriptive-table, warning=FALSE, message=FALSE}
+
+
+library(haven)
+library(tidyverse)
+library(survey)
+library(gtsummary)
+library(xfun)
+library(stargazer)
+
+data_2019 <- read_stata("data/2019_final.dta")
+
+data_2019 <- data_2019 %>% 
+  mutate(treated_district = ifelse(
+    shdist %in% c(214, 367, 273, 220, 169, 930, 871, 122, 130, 291, 
+                  825, 302, 287, 328, 339, 248, 60, 357, 242, 842, 
+                  412, 69, 470, 36, 321, 847, 488, 900, 562, 49, 
+                  581, 546, 28, 593, 585), 1, 0
+  ))
+
+data_2019 <- data_2019 %>% 
+  mutate(eligibility_status = case_when(
+    v012 >= 21  & 
+      ((b2_01 >= 2012 & b2_01 <= 2016) | 
+         (b2_02 >= 2012 & b2_02 <= 2016 & !is.na(b2_02))) ~ 1,
+    
+    v012 >= 21  &
+      ((b2_01 >= 2005 & b2_01 < 2009) | 
+         (b2_02 >= 2005 & b2_02 < 2009 & !is.na(b2_02))) ~ 0,
+      ))
+
+
+data_2019$wt_women <- data_2019$v005/1000000
+
+data_2019$wt_men <- data_2019$mv005/1000000
+
+data_2019 <- data_2019 %>%
+  mutate(
+    combined_group = interaction(
+      haven::as_factor(eligibility_status), 
+      haven::as_factor(treated_district), 
+      sep = " × "
+    )
+  )
+
+data_men <- data_2019 %>% filter(!is.na(mv021))
+
+mysurvey_men <- svydesign(
+  id = ~mv021, 
+  strata = ~mv022,
+  weights = ~wt_men,
+  data = data_men,
+  nest = TRUE
+)
+
+mysurvey_women <- svydesign(
+  id = ~v021,
+  strata = ~v022, 
+  weights = ~wt_women,
+  data = data_2019,
+  nest = TRUE
+)
+
+options(survey.lonely.psu = "adjust")  
+
+controls_hh <- c("v119","v120", "v121", "v122", "v123", "v124", "v125", "v131", "v136", "v137", "v151", "v152", "mv190", "sm190s", "sm191s")
+controls_women <- c("v012", "v133","v437", "v438", "v511", "d113", "v201", "v715", "v714")
+controls_men <- c("mv035", "mv133", "mv212")
+
+desc_table_1 <- mysurvey_women %>%
+  tbl_svysummary(
+    include = all_of(controls_women),
+    by = combined_group,
+    statistic = list(
+      all_continuous() ~ "{mean}\n({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 3,
+    missing = "no"
+  ) %>%
+  modify_caption("**Table 1. Survey-Weighted Descriptives for Women**") %>%
+  modify_header(
+    stat_1 ~ "**Control District × Ineligible**  \nN= {n}",
+    stat_2 ~ "**Treated District × Ineligible**  \nN= {n}", 
+    stat_3 ~ "**Control District × Eligible**  \nN= {n}",
+    stat_4 ~ "**Treated District × Eligible**   \nN= {n}"
+  ) %>%
+  modify_footnote(all_stat_cols() ~ "Mean (SD) for continuous variables; N (%) for categorical variables. 0 = no, 1 = yes for binary variables.")
+desc_table_1 %>% as_gt()
+
+````
+In the table above, it can be seen that the characteristics of the women do not vary widely across treatment districts and ineligible/eligible women. It is rather remarkable that age at first cohabitation remains so constant across the sample. However, it would seem that for the eligible women in treated districts, age, weight, total children ever born, and working seem to be rather lower than for the full sample. The similarity between treated disticts/untreated districts, and treated/untreated samples is to be expected however, as the sample chosen for the pilot program IGMSY was purposely designed to be representative of the country as a whole [@https://doi.org/10.1016/j.jdeveco.2018.05.008] 
+
+````{r second descriptive-table, warning=FALSE, message=FALSE}
+desc_table_2 <- mysurvey_men %>%
+  tbl_svysummary(
+    include = all_of(controls_men),
+    by = combined_group,
+    statistic =list(
+      all_continuous() ~ "{mean}\n({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 3,
+    missing = "no"
+  ) %>%
+  add_n() %>% 
+  modify_caption("**Table 2. Survey-Weighted Descriptives for Men**") %>%
+  modify_header(
+  stat_1 ~ "**Control District × Ineligible**  \nN = {n}",
+  stat_2 ~ "**Treated District × Ineligible**  \nN = {n}", 
+  stat_3 ~ "**Control District × Eligible**  \nN = {n}",
+  stat_4 ~ "**Treated District × Eligible**  \nN = {n}"
+) %>%
+  modify_footnote(all_stat_cols() ~ "Mean (SD) for continuous variables; N (%) for categorical variables. 0 = no, 1 = yes for binary variables.")
+desc_table_2 %>% as_gt() 
+````
+
+The table above displays certain characteristics of men in the sample. These men are married, and matched to women in the sample. 
+````{r third descriptive-table, warning=FALSE, message=FALSE}
+desc_table_3 <- mysurvey_women %>%
+  tbl_svysummary(
+    include = all_of(controls_hh), 
+    by = combined_group,
+    statistic = list(
+      all_continuous() ~ "{mean}\n({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 3,
+    missing = "no",
+    label = list(
+      mv190 ~ "Wealth Index (National)",
+      sm190s ~ "Wealth Index (Within State)"  
+    )
+  ) %>%
+  modify_caption("**Table 3. Survey-Weighted Household Characteristics**") %>%
+  modify_header(
+    stat_1 ~ "**Control District × Ineligible**  \nN = {n}",
+    stat_2 ~ "**Treated District × Ineligible**  \nN = {n}", 
+    stat_3 ~ "**Control District × Eligible**  \nN = {n}",
+    stat_4 ~ "**Treated District × Eligible**  \nN = {n}"
+  ) %>%
+  modify_footnote(
+    all_stat_cols() ~ "Mean (SD) for continuous variables; N (%) for categorical variables. Wealth indices: 1 = Poorest, 5 = Richest. Sex of HH head: 1 = Male, 2 = Female. Ethnicity: 991 = Caste, 992 = Tribe, 993 = No caste/tribe, 998 = Don't know. Binary variables: 0 = No, 1 = Yes, 7 = Not a dejure resident (where applicable)."
+  )
+
+desc_table_3 %>% as_gt()
+
+````
+The table above displays characteristics of the household in the sample. 
+
+Data & Description
+Based on equation (1) above, the regression estimated is a General Linear Regression, taking into account the survey design of DHS 2019-21 (NHFS-5). Rural samples were selected through a 2 stage sample design, assigning villages as Primary Sampling Units at the first stage (selected with probability proportional to size) followed by a random selection of 22 households in each PSU as the second stage. In urban areas, the selection was also 2-stage, using Census Enumeration Blocks (CEB) selected as the first stage and then a random selection of 22 households within each of these blocks for the second stage.
+
+
+IPV and Attitudes towards IPV
+```{r, IPV Models, warning=FALSE, echo=FALSE}
+outcomes_ipv <- c("d106", "d107", "d108", "d129")
+model_results_2 <- list()
+for (i in outcomes_ipv) {
+  formula_i <- as.formula(paste0(i, " ~ eligibility_status + treated_district * eligibility_status")) 
+  model_i <- tryCatch({
+    svyglm(formula_i, 
+           design= mysurvey_women,
+           data = data_2019)
+  }, 
+  error= function(e){
+    # Use the specific error message for better debugging
+    message(paste("Something got messed up somehow", i, ":", e$message)) 
+    return(NULL)
+  })
+  
+  if (!is.null(model_i)) {
+    model_results_2[[i]] <- model_i
+  }
+}
+
+model_vector_2 <- do.call(c, list(model_results_2))
+# Use lapply to get the summary for each model
+summaries_list <- lapply(model_results_1, summary)
+print(summaries_list)
+# Extract the SEs for all coefficients from all models
+se_list <- lapply(summaries_list, function(x) x$coefficients[, "Std. Error"])
+
+# Extract the P-values for all coefficients from all models
+p_list <- lapply(summaries_list, function(x) x$coefficients[, "Pr(>|t|)"])
+
+# 2. Run stargazer, passing the lists of correct SEs and P-values
+custom_2 <- c("Less Severe Violence", "Severe Violence", "Sexual Violence", "Afraid of Husband")
+stargazer(model_vector_2,
+          type = "text",
+          title = "Survey-Weighted DiD Results, No Controls",
+          se = se_list,           
+          p = p_list,           
+          column.labels = custom_2,
+          keep.stat = c("n", "rsq"), 
+          out = "did_results_final.txt",
+          t.auto = FALSE,
+          p.auto = FALSE)
+##Regressions with controls ##
+outcomes_ipv <- c("d106", "d107", "d108", "d129")
+model_results_4 <- list()
+for (i in outcomes_ipv) {
+  formula_i <- as.formula(paste0(i, " ~ eligibility_status + treated_district * eligibility_status + ", controls_formula)) 
+  model_i <- tryCatch({
+    svyglm(formula_i, 
+           design= mysurvey_women,
+           data = data_2019)
+  }, 
+  error= function(e){
+    # Use the specific error message for better debugging
+    message(paste("Something got messed up somehow", i, ":", e$message)) 
+    return(NULL)
+  })
+  
+  if (!is.null(model_i)) {
+    model_results_4[[i]] <- model_i
+  }
+}
+
+model_vector_4 <- do.call(c, list(model_results_2))
+# Use lapply to get the summary for each model
+summaries_list <- lapply(model_results_1, summary)
+print(summaries_list)
+# Extract the SEs for all coefficients from all models
+se_list <- lapply(summaries_list, function(x) x$coefficients[, "Std. Error"])
+
+# Extract the P-values for all coefficients from all models
+p_list <- lapply(summaries_list, function(x) x$coefficients[, "Pr(>|t|)"])
+
+# 2. Run stargazer, passing the lists of correct SEs and P-values
+custom_2 <- c("Less Severe Violence", "Severe Violence", "Sexual Violence", "Afraid of Husband")
+stargazer(model_vector_4,
+          type = "text",
+          title = "Survey-Weighted DiD Results, with Controls",
+          se = se_list,           
+          p = p_list,           
+          column.labels = custom_2,
+          keep.stat = c("n", "rsq"), 
+          out = "did_results_final.txt",
+          t.auto = FALSE,
+          p.auto = FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
