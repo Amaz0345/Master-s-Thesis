@@ -1,0 +1,161 @@
+---
+title: "Results"
+author: "Ananya Mazumder"
+date: "2026-02-03"
+output: word_document
+---
+
+```{r "setting up the data", include=FALSE, echo=FALSE}
+library(haven)
+library(tidyverse)
+library(survey)
+library(gtsummary)
+library(xfun)
+library(broom)
+library(here)
+library(labelled)
+library(tableone)
+
+data_2019 <- read_stata(here("data", "2019_final.dta"))
+
+data_2019 <- data_2019 %>%
+  mutate(
+    v131 = to_factor(v131),
+    v131 = case_when(
+      v131 %in% c("caste", "tribe", "no caste / tribe", "don't know") ~ v131,
+      TRUE ~ factor(NA, levels = levels(v131))    
+      ) %>%
+      set_variable_labels(v131 = "ethnicity")
+  )
+
+data_2019 <- data_2019 %>%
+  mutate(
+    v437 = case_when(
+      v437 < 9000 ~ v437 / 10,
+      TRUE ~ NA_real_
+    ),
+    v438 = case_when(
+      v438 < 9000 ~ v438 / 10,
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  set_variable_labels(
+    v437 = "Weight (kg)",
+    v438 = "Height (cm)"
+  )
+
+var_labels <- data_2019 %>% 
+  map(~attr(., "label")) %>% 
+  compact()
+
+data_2019 <- data_2019 %>%
+  mutate(across(everything(), ~{
+    if (is.labelled(.)) {
+      lbls <- val_labels(.)
+      return(if_else(. >= 95 & . %in% lbls, NA_real_, as.numeric(.)))
+    }
+    return(.)
+  })) %>%
+  unlabelled() %>%
+  mutate(across(where(is.numeric), ~zap_labels(.)))
+
+data_2019 <- data_2019 %>% 
+  mutate(treated_district = ifelse(
+    shdist %in% c(214, 367, 273, 220, 169, 930, 871, 122, 130, 291, 
+                  825, 302, 287, 328, 339, 248, 60, 357, 242, 842, 
+                  412, 69, 470, 36, 321, 847, 488, 900, 562, 49, 
+                  581, 546, 28, 593, 585), 1, 0
+  ))
+
+data_2019 <- data_2019 %>% 
+  mutate(eligibility_status = case_when(
+    v012 >= 21  & 
+      ((b2_01 >= 2012 & b2_01 <= 2016) | 
+         (b2_02 >= 2012 & b2_02 <= 2016 & !is.na(b2_02))) ~ 1,
+    
+    v012 >= 21  &
+      ((b2_01 >= 2005 & b2_01 < 2009) | 
+         (b2_02 >= 2005 & b2_02 < 2009 & !is.na(b2_02))) ~ 0,
+  ))
+
+
+data_2019 <- data_2019 %>% 
+  set_variable_labels(.labels = var_labels, .strict = FALSE)
+
+data_2019$wt_women <- data_2019$v005/1000000
+data_2019$wt_men <- data_2019$mv005/1000000
+data_2019 <- data_2019 %>%
+  mutate(
+    combined_group = interaction(
+      haven::as_factor(eligibility_status), 
+      haven::as_factor(treated_district), 
+      sep = " × "
+    )
+  )
+data_2019$v012_sq <- data_2019$v012^2
+attr(data_2019$v012_sq, "label") <- "Square of Women's Age"
+
+controls_hh <- c("v131","v136","v137","v151","v152","v119","v120", "v121", "v122", "v123", "v124", "v125", "mv190", "sm190s")
+controls_women <- c("v012", "v012_sq", "v133","v437", "v438", "v511", "d113", "v201", "v715", "v714")
+controls_men <- c("mv035", "mv133", "mv212")
+
+group_counts <- data_2019 %>%
+  filter(!is.na(combined_group)) %>%
+  count(combined_group) %>%
+  arrange(combined_group)
+
+data_men <- data_2019 %>% filter(!is.na(mv021))
+
+mysurvey_men <- svydesign(
+  id = ~mv021, 
+  strata = ~mv022,
+  weights = ~wt_men,
+  data = data_men,
+  nest = TRUE
+)
+
+mysurvey_women <- svydesign(
+  id = ~v021,
+  strata = ~v022, 
+  weights = ~wt_women,
+  data = data_2019,
+  nest = TRUE
+)
+
+options(survey.lonely.psu = "adjust") 
+
+outcomes_dec <- c("v739", "v743a", "v743b", "v743d", "v743f") 
+outcomes_ipv <- c("d106", "d107", "d108", "d129")
+outcomes_work <- c("v714", "v714a", "v746", "v731")
+
+```
+
+
+The first descriptive table includes controls at the household and individual levels. 
+
+```{r "First descriptive table", warning=FALSE, message=FALSE, include=TRUE, echo=FALSE}
+
+desc_table_1 <- mysurvey_women %>%
+  tbl_svysummary(
+    include = all_of(c(controls_women, controls_hh)),
+    by = combined_group,
+    statistic = list(
+      all_continuous() ~ "{mean}\n({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 3,
+    missing = "no"
+  ) %>%
+  modify_caption("**Table 2. Survey-Weighted Descriptives for Women & Household**") %>%
+  modify_header(
+    stat_1 ~ paste0("**Control District × Ineligible**  \nN = ", group_counts$n[1]),
+    stat_2 ~ paste0("**Treated District × Ineligible**  \nN = ", group_counts$n[2]), 
+    stat_3 ~ paste0("**Control District × Eligible**  \nN = ", group_counts$n[3]),
+    stat_4 ~ paste0("**Treated District × Eligible**  \nN = ", group_counts$n[4])
+  ) %>%
+  modify_footnote(all_stat_cols() ~ "Mean (SD) for continuous variables; N (%) for categorical variables. N represents unweighted sample size.Wealth indices: 1 = Poorest, 5 = Richest. Sex of HH head: 1 = Male, 2 = Female. Binary variables: 0 = No, 1 = Yes, 7 = Not a dejure resident (where applicable). For all indicators based on the household members (PR file), either the de jure population (usual resident of the house) or the de facto population (slept at the home last night) is selected.")
+
+desc_table_1 %>% as_gt()
+```
+
+The second table are controls for the men's population. 

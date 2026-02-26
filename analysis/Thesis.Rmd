@@ -19,17 +19,17 @@ Where: B1 is the coefficient of interest, or the one capturing the interaction e
 Individual level controls include woman’s/man's age, square of woman’s/man's age, woman’s/man's education, woman’s/man's height and weights, age of woman at the first marriage, relative education of woman with respect to husband, husband’s education, and frequency of alcohol consumption by husband/partner. Household level controls include age of household head, sex of the household head, number of members in the household, number of children below 5 years in the household, household’s wealth index within a state, urban/rural residence, whether the household belongs to the SC (which in the DHS is coded as ethnicity), whether the household is poor in terms of the wealth index in the NHFS sample, household’s relative wealth based on the assets owned. 
 Empowerment in this thesis would be looked at through various lenses, including decision-making, economic, sexual and reproductive rights and physical mobility. Accordingly, the outcomes looked at include woman's participation in decision making regarding various decisions in the household and with regard to her own mobility, women's economic means, healthcare practises and reproductive rights, in addition to her own attitudes towards violence. As established earlier in the introduction and literature review, an important key component of women's empowerment is the attitude of men. Subsequently, outcomes with regards to this include men's attitudes towards decision-making, and violence towards one's spouse.  
 
-````{r first descriptive-table, warning=FALSE, message=FALSE}
-
-
+```{r "setting up the data", include=FALSE, echo=FALSE}
 library(haven)
 library(tidyverse)
 library(survey)
 library(gtsummary)
 library(xfun)
 library(stargazer)
+library(here)
+library(labelled)
 
-data_2019 <- read_stata("data/2019_final.dta")
+data_2019 <- read_stata(here("data", "2019_final.dta"))
 
 data_2019 <- data_2019 %>% 
   mutate(treated_district = ifelse(
@@ -55,14 +55,6 @@ data_2019$wt_women <- data_2019$v005/1000000
 
 data_2019$wt_men <- data_2019$mv005/1000000
 
-data_2019 <- data_2019 %>%
-  mutate(
-    combined_group = interaction(
-      haven::as_factor(eligibility_status), 
-      haven::as_factor(treated_district), 
-      sep = " × "
-    )
-  )
 
 data_men <- data_2019 %>% filter(!is.na(mv021))
 
@@ -84,9 +76,21 @@ mysurvey_women <- svydesign(
 
 options(survey.lonely.psu = "adjust")  
 
-controls_hh <- c("v119","v120", "v121", "v122", "v123", "v124", "v125", "v131", "v136", "v137", "v151", "v152", "mv190", "sm190s", "sm191s")
+controls_hh <- c("v119","v120", "v121", "v122", "v123", "v124", "v125", "v131", "v136", "v137", "v151", "v152", "mv190", "sm190s")
 controls_women <- c("v012", "v133","v437", "v438", "v511", "d113", "v201", "v715", "v714")
 controls_men <- c("mv035", "mv133", "mv212")
+
+group_counts <- data_2019 %>%
+  filter(!is.na(combined_group)) %>%
+  count(combined_group) %>%
+  arrange(combined_group)
+
+data_2019$v012_sq <- data_2019$v012^2
+attr(data_2019$v012_sq, "label") <- "Square of Women's Age"
+
+```
+
+```{r "First descriptive table", warning=FALSE, message=FALSE, include=TRUE, echo=FALSE}
 
 desc_table_1 <- mysurvey_women %>%
   tbl_svysummary(
@@ -109,7 +113,7 @@ desc_table_1 <- mysurvey_women %>%
   modify_footnote(all_stat_cols() ~ "Mean (SD) for continuous variables; N (%) for categorical variables. 0 = no, 1 = yes for binary variables.")
 desc_table_1 %>% as_gt()
 
-````
+```
 In the table above, it can be seen that the characteristics of the women do not vary widely across treatment districts and ineligible/eligible women. It is rather remarkable that age at first cohabitation remains so constant across the sample. However, it would seem that for the eligible women in treated districts, age, weight, total children ever born, and working seem to be rather lower than for the full sample. The similarity between treated disticts/untreated districts, and treated/untreated samples is to be expected however, as the sample chosen for the pilot program IGMSY was purposely designed to be representative of the country as a whole [@https://doi.org/10.1016/j.jdeveco.2018.05.008] 
 
 ````{r second descriptive-table, warning=FALSE, message=FALSE}

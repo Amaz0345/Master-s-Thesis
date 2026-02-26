@@ -18,7 +18,7 @@ library(survey)
 ## setting up 2019 couples data ##
 ## Men's Data ## 
 setwd("~/Thesis/Data/DHS India for Ananya/MR/2019-21/IAMR7EDT")
-needed_vars <- readLines("req_var.txt")
+needed_vars <- readLines("req_var.txt") ##add the new variables, including man currently working!!
 varnames <- names(read_dta("IAMR7EFL.DTA", n_max = 1))
 vars_to_use <- intersect(needed_vars, varnames)
 men_2019 <- read_dta("IAMR7EFL.DTA", col_select = any_of(vars_to_use))
@@ -33,7 +33,7 @@ varnames <- names(read_dta("IAIR7EFL.DTA", n_max = 1))
 vars_to_use <- intersect(needed_vars, varnames)
 women_2019 <- read_dta("IAIR7EFL.DTA", col_select = any_of(vars_to_use))
 write_dta(women_2019, "women_2019.dta")
-
+##need to update the list of variables to add height/weight/whatever else I added 
 rm(varnames, vars_to_use, needed_vars)
 
 ##merging both datasets##
@@ -69,7 +69,7 @@ data_2019 <- read_dta('couples_2019.dta')
 
 
 # Read the PR dataset and extract the district variable
-setwd("~/Thesis/Data/DHS India for Ananya/PR/2019-20")
+setwd("C:/Users/ananyama/Documents/Uni/Thesis/Data and Scripts/Data")
 
 pr_data <- read_dta("IAPR7EFL.DTA") %>%
   select(hv001, hv002, hv024, hvidx, shdist) 
@@ -100,29 +100,6 @@ district_state_summary <- couples_2019 %>%
   arrange(state_name, district_name)
 print(district_state_summary, n="max")
 ##exporting the same 
-library(rtf)
-rtf_doc <- RTF("district_state_map.rtf")
-addParagraph(rtf_doc, "District-State Mapping Summary")
-addTable(rtf_doc, district_state_summary)
-done(rtf_doc)
-##still incorrect. let's check again 
-pr_check <- read_dta("IAPR7EFL.dta") %>%
-  select(hv001, hv002, hvidx, hv024, shdist)
-
-district_state_summary <- pr_check %>%
-  filter(!is.na(shdist)) %>%
-  mutate(state_name = as_factor(hv024),
-         district_name = as_factor(shdist)) %>%
-  group_by(state_name, district_name) %>%
-  arrange(state_name, district_name)
-print(district_state_summary, n="max")
-
-##still incorrect, duplicates in hh member data?
-pr_duplicates <- pr_data %>%
-  group_by(hv001, hv002, hvidx) %>%
-  filter(n() > 1) %>%
-  arrange(hv001, hv002, hvidx)
-##nope 
 
 ##creating the sampling weight variable 
 couples_2019$wt <- couples_2019$v005/1000000
@@ -186,52 +163,110 @@ fre(data$v213)
 ##making the dataset even smaller, removing the states that have their own programs 
 write_dta(couples_2019, "couples_2019.dta")
 
+## excluding MP = 23, J&K =1, MH = 27, Odisha = 21, TN = 33, Naga = 13, Andaman= 35, Lakshadweep = 31, Daman & Diu = 25, Puducherry = 34, Ladakh = 37, Puducherry = 34, Chandigarh = 4 
+## restricting sample to control and treated districts only 
+districts_to_keep <- c(
+  214,  # saharsa
+  367,  # simdega
+  273,  # tamenglong
+  220,  # vaishali
+  169,  # mahoba
+  930,  # sultanpur
+  871,  # east garo hills
+  122,  # bhilwara
+  130,  # udaipur
+  291,  # dhalai
+  825,  # bastar
+  302,  # goalpara
+  287,  # lawngtlai
+  328,  # jalpaiguri
+  339,  # bankura
+  248,  # papum pare
+  60,   # dehradun
+  357,  # purbi singhbhum
+  242,  # west sikkim
+  842,  # north west delhi
+  412,  # dhamtari
+  69,   # panchkula
+  470,  # patan
+  36,   # kapurthala
+  321,  # kamrup
+  847,  # west delhi
+  488,  # bharuch
+  900,  # nalgonda
+  562,  # dharwad
+  49,   # amritsar
+  581,  # kolar
+  546,  # west godavari
+  28,   # hamirpur
+  593,  # palakkad
+  585,  # north goa
+  212,  # katihar
+  351,  # godda
+  219,  # saran
+  216,  # muzaffarnagar
+  191,  # azamgarh
+  876,  # west garo hills
+  125,  # banswara
+  279,  # ukhrul
+  827,  # bilaspur
+  120,  # tonk
+  308,  # dhemaji
+  364,  # ranchi
+  916,  # north tripura
+  253,  # changlang
+  57,   # chamoli
+  340,  # puruliya
+  829,  # durg
+  281,  # mamit
+  331,  # dakshin dinajpur
+  844,  # south delhi
+  243,  # south sikkim
+  85,   # rewari
+  40,   # fatehgarh sahib
+  491,  # valsad
+  310,  # dibrugarh
+  857,  # kheda
+  838,  # east delhi
+  551,  # ysr
+  567,  # davanagere
+  30,   # bilaspur
+  44,   # muktsar
+  905,  # rangareddy
+  571,  # tumkur
+  591,  # kozhikode
+  586   # south goa
+)
+
+
+##Construction of treated district versus untreated district ##
+couples_2019 <- couples_2019 %>%
+  filter(as.numeric(shdist) %in% districts_to_keep) %>%
+  mutate(
+    shdist_num = as.numeric(shdist),
+    treated_district = ifelse(
+      shdist_num %in% c(214, 367, 273, 220, 169, 930, 871, 122, 130, 291, 
+                        825, 302, 287, 328, 339, 248, 60, 357, 242, 842, 
+                        412, 69, 470, 36, 321, 847, 488, 900, 562, 49, 
+                        581, 546, 28, 593, 585), 1, 0
+    )
+  )
+
 ##now want to work with this dataframe, to display some characteristics and to display the summary stats 
 
+##left join for the man currently working variable 
 
-##creating new categorical variables using mutate and ifelse (i don't have this variable, so can change this later)
-couples_final_2019 <- couples_clean_final %>%
-  mutate(modfp = 
-           ifelse(v313 == 3, 1, 0)) %>%
-  set_value_labels(modfp= c(yes = 1, no= 0)) %>%
-  set_variable_labels(modfp = "Currently used any modern method")
+data_2019 <- data_2019 %>%
+  left_join(IAMR7EFL %>% select(mv001, mv002, mv003, mv714), 
+            by = c("husband_cluster" = "mv001", 
+                   "husband_hh" = "mv002", 
+                   "husband_line" = "mv003"))
+data_2019 <- data_2019 %>%
+  left_join(IAMR7EFL %>% select(mv001, mv002, mv003, mv190a), 
+            by = c("husband_cluster" = "mv001", 
+                   "husband_hh" = "mv002", 
+                   "husband_line" = "mv003"))
+write_dta(data_2019, here("data", "2019_final.dta"))
 
-##creating new categorical variables using case_when and mutate 
-couples_final_2019 <- couples_clean_final %>%
-  mutate(modfp = 
-           case_when(v313 == 3 ~ 1,
-                     v313 < 3~ 0 )) %>% 
-  set_value_labels(modfp= c(yes = 1, no= 0)) %>%
-  set_variable_labels(modfp = "Currently used any modern method")
-
-##looking at the results: 
-table(couples_final_2019$v313) 
-table(couples_final_2019$modfp) 
-
-##crosstabulation of modfp and place of residence, again, need to change modfp, its on a variable that i don't have 
-svyby(~modfp, by = ~v025, design = mysurvey, FUN =svymean,
-      vartype = c("se", "ci")) 
-print_labels(couples_final_2019$v025)
-
-table2 <- svyby(~modfp. by = ~v025, design = mysurvey, FUN = svymean,
-                vartype = c("se", "ci")) 
-table2
-
-##Chi-Square results 
-svychisq(~modfp+v025, mysurvey)
-
-##Generalized linear models 
-?svyglm
-
-##logistic regression using svyglm
-reg1 <- svyglm(modfp~ 1+ v025 + as.factor(v013), design =mysurvey,
-               family =binomial(link = "logit")) ##as.factor used for categorical variables 
-summary(reg1) 
-
-##odd-ratios instead of coefficients:
-ORreg1 <- exp(reg1$coefficients)
-ORreg1
-
-##looking at 2019 PR data for the district identifiers 
-## it was shdist 
+##i also dropped women who are unmarried and below 19 years of age i think, but the code for that is missing lol
 

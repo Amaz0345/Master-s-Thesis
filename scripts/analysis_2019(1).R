@@ -118,25 +118,31 @@ districts_to_keep <- c(
   586   # south goa
 )
 
-# Filter the dataset
-couples_selected_districts <- data_2019 %>%
-  filter(shdist %in% districts_to_keep)
-write_dta(couples_selected_districts, "2019_final.dta")
-
-
-
 
 ##Construction of treated district versus untreated district ##
-data_2019 <- data_2019 %>% 
-  mutate(treated_district = ifelse(
-    shdist %in% c(214, 367, 273, 220, 169, 930, 871, 122, 130, 291, 
-                  825, 302, 287, 328, 339, 248, 60, 357, 242, 842, 
-                  412, 69, 470, 36, 321, 847, 488, 900, 562, 49, 
-                  581, 546, 28, 593, 585), 1, 0
-  ))
+couples_2019 <- couples_2019 %>%
+  filter(as.numeric(shdist) %in% districts_to_keep) %>%
+  mutate(
+    shdist_num = as.numeric(shdist),
+    treated_district = ifelse(
+      shdist_num %in% c(214, 367, 273, 220, 169, 930, 871, 122, 130, 291, 
+                        825, 302, 287, 328, 339, 248, 60, 357, 242, 842, 
+                        412, 69, 470, 36, 321, 847, 488, 900, 562, 49, 
+                        581, 546, 28, 593, 585), 1, 0
+    )
+  )
 
+# Verify
+couples_2019 %>%
+  distinct(shdist_num, treated_district) %>%
+  count(treated_district)
+write_dta(couples_2019, "data_2019.dta")
 
-district_state_table <- table(data_2019$shdist, data_2019$v024)
+data_2019 %>%
+  count(treated_district)
+data_2019 %>%
+  distinct(shdist_num, treated_district) %>%
+  count(treated_district)
 
 
 ## Construction of eligible versus ineligible women ##

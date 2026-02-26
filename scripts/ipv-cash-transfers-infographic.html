@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cash Transfers & IPV: Theoretical Pathways</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0e0c;
+    --paper: #1a1814;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --teal: #4a9e8e;
+    --teal-light: #7dcfbf;
+    --rose: #c95b5b;
+    --rose-light: #e88a8a;
+    --text: #e8e2d9;
+    --muted: #8a8070;
+    --line: rgba(201,168,76,0.2);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 900px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 48px);
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* STARTING BOX */
+  .starting-node {
+    background: var(--paper);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 28px 36px;
+    text-align: center;
+    margin: 0 auto 8px;
+    max-width: 500px;
+    position: relative;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .starting-node .label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .starting-node h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--text);
+  }
+
+  .starting-node p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ARROW DOWN */
+  .arrow-down {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 0 auto;
+    width: fit-content;
+    animation: fadeUp 0.8s 0.35s ease both;
+  }
+
+  .arrow-line {
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold), rgba(201,168,76,0.3));
+  }
+
+  /* SPLIT */
+  .split-label {
+    text-align: center;
+    margin-bottom: 8px;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+  .split-label span {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 0 12px;
+  }
+
+  /* INTERMEDIATE NODE */
+  .intermediate {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+    animation: fadeUp 0.8s 0.45s ease both;
+  }
+  .intermediate-box {
+    background: #201e1a;
+    border: 1px solid rgba(138,128,112,0.35);
+    border-radius: 10px;
+    padding: 20px 28px;
+    max-width: 460px;
+    text-align: center;
+  }
+  .intermediate-box h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .intermediate-box p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* FORK */
+  .fork-container {
+    position: relative;
+    margin: 0 auto;
+    max-width: 860px;
+    animation: fadeUp 0.8s 0.6s ease both;
+  }
+
+  .fork-line {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .branch-left, .branch-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 380px;
+    gap: 0;
+  }
+
+  .h-line-left {
+    width: 50%;
+    height: 2px;
+    align-self: flex-start;
+    margin-top: 0;
+  }
+
+  .fork-horizontal {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 50px;
+    position: relative;
+  }
+
+  /* SVG fork */
+  .fork-svg {
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+  }
+
+  /* PATHWAY CARDS */
+  .pathways {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 0;
+    animation: fadeUp 0.8s 0.7s ease both;
+  }
+
+  @media (max-width: 600px) {
+    .pathways { grid-template-columns: 1fr; }
+  }
+
+  .pathway {
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pathway-header {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pathway-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .pathway-header h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .pathway-body {
+    padding: 0 24px 24px;
+    flex: 1;
+  }
+
+  /* Pathway A — acceptance */
+  .pathway-a {
+    background: linear-gradient(145deg, #0d1f1c, #121a18);
+    border: 1px solid rgba(74,158,142,0.4);
+  }
+  .pathway-a .pathway-number { background: rgba(74,158,142,0.2); color: var(--teal-light); }
+  .pathway-a .pathway-header h3 { color: var(--teal-light); }
+  .pathway-a .pathway-header { border-bottom: 1px solid rgba(74,158,142,0.2); }
+
+  /* Pathway B — resistance */
+  .pathway-b {
+    background: linear-gradient(145deg, #1f0d0d, #1a1212);
+    border: 1px solid rgba(201,91,91,0.4);
+  }
+  .pathway-b .pathway-number { background: rgba(201,91,91,0.2); color: var(--rose-light); }
+  .pathway-b .pathway-header h3 { color: var(--rose-light); }
+  .pathway-b .pathway-header { border-bottom: 1px solid rgba(201,91,91,0.2); }
+
+  /* STEPS inside pathway */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 16px;
+  }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .step-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 20px;
+  }
+
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .step-vline {
+    width: 1px;
+    flex: 1;
+    min-height: 16px;
+  }
+
+  .pathway-a .step-dot { background: var(--teal); }
+  .pathway-a .step-vline { background: rgba(74,158,142,0.25); }
+  .pathway-b .step-dot { background: var(--rose); }
+  .pathway-b .step-vline { background: rgba(201,91,91,0.25); }
+
+  .step-text {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    padding-bottom: 14px;
+  }
+
+  /* OUTCOME BOX */
+  .outcome-box {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pathway-a .outcome-box { background: rgba(74,158,142,0.12); border: 1px solid rgba(74,158,142,0.35); }
+  .pathway-b .outcome-box { background: rgba(201,91,91,0.12); border: 1px solid rgba(201,91,91,0.35); }
+
+  .outcome-icon { font-size: 22px; flex-shrink: 0; }
+
+  .outcome-text .headline {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+  }
+  .pathway-a .outcome-text .headline { color: var(--teal-light); }
+  .pathway-b .outcome-text .headline { color: var(--rose-light); }
+
+  .outcome-text .desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* MECHANISM TAG */
+  .mechanism-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .pathway-a .mechanism-tag { background: rgba(74,158,142,0.15); color: var(--teal); }
+  .pathway-b .mechanism-tag { background: rgba(201,91,91,0.15); color: var(--rose); }
+
+  /* FOOTNOTE */
+  .footnote {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+    animation: fadeUp 0.8s 0.9s ease both;
+  }
+
+  /* FORK SVG arrows */
+  .fork-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 12px;
+    animation: fadeUp 0.8s 0.55s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="eyebrow">Theoretical Framework</div>
+    <h1>Cash Transfers &amp; <em>Intimate Partner Violence</em></h1>
+    <p class="subtitle">Two competing theoretical pathways linking improved household economic conditions to changes in IPV incidence</p>
+  </div>
+
+  <!-- STARTING NODE -->
+  <div class="starting-node">
+    <div class="label">Intervention</div>
+    <h2>Cash Transfer Programme</h2>
+    <p>Direct financial transfer to women in the household</p>
+  </div>
+
+  <!-- ARROW DOWN -->
+  <div class="arrow-down">
+    <div class="arrow-line" style="height:32px;"></div>
+  </div>
+
+  <!-- INTERMEDIATE -->
+  <div class="intermediate">
+    <div class="intermediate-box">
+      <h3>Women's Bargaining Power Increases</h3>
+      <p>Improved economic conditions strengthen women's negotiating position within the household dynamic</p>
+    </div>
+  </div>
+
+  <!-- FORK SVG -->
+  <div class="fork-wrap">
+    <svg class="fork-svg" width="600" height="60" viewBox="0 0 600 60">
+      <!-- vertical from top -->
+      <line x1="300" y1="0" x2="300" y2="20" stroke="rgba(201,168,76,0.4)" stroke-width="1.5"/>
+      <!-- horizontal bar -->
+      <line x1="120" y1="20" x2="480" y2="20" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>
+      <!-- left branch down -->
+      <line x1="120" y1="20" x2="120" y2="52" stroke="rgba(74,158,142,0.7)" stroke-width="1.5"/>
+      <!-- right branch down -->
+      <line x1="480" y1="20" x2="480" y2="52" stroke="rgba(201,91,91,0.7)" stroke-width="1.5"/>
+      <!-- left arrowhead -->
+      <polygon points="120,58 115,46 125,46" fill="rgba(74,158,142,0.8)"/>
+      <!-- right arrowhead -->
+      <polygon points="480,58 475,46 485,46" fill="rgba(201,91,91,0.8)"/>
+      <!-- branch labels -->
+      <text x="200" y="16" text-anchor="middle" font-size="10" fill="rgba(138,128,112,0.8)" letter-spacing="1" font-family="DM Sans, sans-serif">PATHWAY A</text>
+      <text x="400" y="16" text-anchor="middle" font-size="10" fill="rgba(138,128,112,0.8)" letter-spacing="1" font-family="DM Sans, sans-serif">PATHWAY B</text>
+    </svg>
+  </div>
+
+  <!-- PATHWAYS -->
+  <div class="pathways">
+
+    <!-- PATHWAY A -->
+    <div class="pathway pathway-a">
+      <div class="pathway-header">
+        <div class="pathway-number">A</div>
+        <h3>Acceptance &amp; Adaptation</h3>
+      </div>
+      <div class="pathway-body">
+        <div class="mechanism-tag">Male Acceptance Mechanism</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-connector">
+              <div class="step-dot"></div>
+              <div class="step-vline"></div>
+            </div>
+            <div class="step-text">Women assert greater agency and decision-making power within the home as economic dependence on male partner decreases</div>
+          </div>
+          <div class="step">
+            <div class="step-connector">
+              <div class="step-dot"></div>
+              <div class="step-vline"></div>
+            </div>
+            <div class="step-text">Men adapt to the shift in household dynamics, accepting the rebalancing of power without perceiving it as a threat to status</div>
+          </div>
+          <div class="step">
+            <div class="step-connector">
+              <div class="step-dot"></div>
+            </div>
+            <div class="step-text">Household cooperation improves; reduced financial stress diminishes conflict triggers</div>
+          </div>
+        </div>
+        <div class="outcome-box">
+          <div class="outcome-icon">↘</div>
+          <div class="outcome-text">
+            <div class="headline">IPV Decreases</div>
+            <div class="desc">Economic empowerment translates to reduced violence</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATHWAY B -->
+    <div class="pathway pathway-b">
+      <div class="pathway-header">
+        <div class="pathway-number">B</div>
+        <h3>Resistance &amp; Reprisal</h3>
+      </div>
+      <div class="pathway-body">
+        <div class="mechanism-tag">Male Backlash Mechanism</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-connector">
+              <div class="step-dot"></div>
+              <div class="step-vline"></div>
+            </div>
+            <div class="step-text">Women attempt to assert agency and renegotiate power within the household, challenging existing gender norms</div>
+          </div>
+          <div class="step">
+            <div class="step-connector">
+              <div class="step-dot"></div>
+              <div class="step-vline"></div>
+            </div>
+            <div class="step-text">Men perceive the shift as a threat to masculine identity and household authority, responding with resistance and coercive control</div>
+          </div>
+          <div class="step">
+            <div class="step-connector">
+              <div class="step-dot"></div>
+            </div>
+            <div class="step-text">Violence is used instrumentally to reassert dominance and punish women for challenging the power hierarchy</div>
+          </div>
+        </div>
+        <div class="outcome-box">
+          <div class="outcome-icon">↗</div>
+          <div class="outcome-text">
+            <div class="headline">IPV Increases</div>
+            <div class="desc">Backlash effect — women face reprisals for empowerment</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pathways -->
+
+  <!-- FOOTNOTE -->
+  <div class="footnote">
+    <p>The direction of the relationship between cash transfers and IPV remains empirically contested. Outcomes may vary by programme design, cultural context, targeting, and whether complementary gender-norm interventions are included.</p>
+  </div>
+
+</div>
+</body>
+</html>
