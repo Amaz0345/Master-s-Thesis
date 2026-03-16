@@ -1,21 +1,20 @@
 rm(list = ls())
 
-##think about setting up a data management structure e.g. a folder for ouputs, and then a link to a dropbox/github for access to the actual dataset so that you won't have to email the dataset too
-## dataset is a once married woman's sample
-
 library(haven)
-library(ggplot2)
 library(tidyverse)
-library(stargazer)
 library(survey)
 library(gtsummary)
 library(xfun)
 library(broom)
 library(here)
 library(labelled)
+library(tableone)
 
-data_2019 <- read_stata(here("data", "2019_final.dta"))
+data_2019 <- read_stata(here("data_2019.dta"))
+data_2019 <- read_stata("data_2019.dta")
+
 ## data cleaning and prep ##
+
 data_2019 <- data_2019 %>%
   mutate(
     v131 = to_factor(v131),
@@ -25,7 +24,6 @@ data_2019 <- data_2019 %>%
       ) %>%
       set_variable_labels(v131 = "ethnicity")
   )
-
 
 table(data_2019$v131, useNA = "always") ##checking to see it worked 
 
@@ -61,17 +59,6 @@ data_2019 <- data_2019 %>%
   mutate(across(where(is.numeric), ~zap_labels(.)))
 
 
-
-##Constructing treated_district 
-data_2019 <- data_2019 %>% 
-  mutate(treated_district = ifelse(
-    shdist %in% c(214, 367, 273, 220, 169, 930, 871, 122, 130, 291, 
-                  825, 302, 287, 328, 339, 248, 60, 357, 242, 842, 
-                  412, 69, 470, 36, 321, 847, 488, 900, 562, 49, 
-                  581, 546, 28, 593, 585), 1, 0
-  ))
-
-
 ## Construction of eligible versus ineligible women ##
 # eligible woman is above 19, gave birth to either 1st or 2nd child between 2012-2016 #or 2016?
 # firstly, drop women below 19 or 21? because if they need to be at least 19 in 2016 then they should be 21 in 2019
@@ -93,9 +80,41 @@ data_2019 <- data_2019 %>%
 # 1 = eligible (2012-2016 births)
 # 0 = ineligible (2005-2009 births)
 
-data_2019 <- data_2019 %>% ##restoring variable labels 
-  set_variable_labels(.labels = var_labels, .strict = FALSE)
-
+var_label(data_2019) <- var_labels
+##creating autonomy and decision-making indices for women 
+# First create the binary versions
+data_2019 <- data_2019 %>%
+  mutate(
+    v739_any_say = ifelse(!is.na(v739), ifelse(v739 %in% c(1, 2), 1, 0), NA),
+    v743a_any_say = ifelse(!is.na(v743a), ifelse(v743a %in% c(1, 2), 1, 0), NA),
+    v743b_any_say = ifelse(!is.na(v743b), ifelse(v743b %in% c(1, 2), 1, 0), NA),
+    v743d_any_say = ifelse(!is.na(v743d), ifelse(v743d %in% c(1, 2), 1, 0), NA),
+    v743f_any_say = ifelse(!is.na(v743f), ifelse(v743f %in% c(1, 2), 1, 0), NA)
+  )
+##any_say variables are constructed such that women responding to decision-making questions with 1 or 2 become 1 (yes, autonomy) and if not, then 0 (not autonomous)
+# Then create the autonomy index using those binary variables
+data_2019 <- data_2019 %>%
+  mutate(
+    # Count non-missing responses
+    n_answered = rowSums(!is.na(across(c(v739_any_say, v743a_any_say, 
+                                         v743b_any_say, v743d_any_say, 
+                                         v743f_any_say)))),
+    
+    # Autonomy index: only if all 5 answered
+    autonomy_index = ifelse(n_answered == 5,
+                            rowMeans(across(c(v739_any_say, v743a_any_say, 
+                                              v743b_any_say, v743d_any_say, 
+                                              v743f_any_say)), na.rm = TRUE),
+                            NA),
+    
+    # Autonomy dummy: only if all 5 answered
+    autonomy_dummy = ifelse(n_answered == 5,
+                            ifelse(rowSums(across(c(v739_any_say, v743a_any_say,
+                                                    v743b_any_say, v743d_any_say, 
+                                                    v743f_any_say)), na.rm = TRUE) > 0, 1, 0),
+                            NA)
+  )
+#"v739", "v743a", "v743b", "v743d", "v743f"
 ##creating the sampling weight variable for women 
 data_2019$wt_women <- data_2019$v005/1000000
 
@@ -119,17 +138,27 @@ attr(data_2019$v012_sq, "label") <- "Square of Women's Age"
 
 controls_hh <- c("v131","v136","v137","v151","v152","v119","v120", "v121", "v122", "v123", "v124", "v125", "mv190", "sm190s")
 controls_women <- c("v012", "v012_sq", "v133","v437", "v438", "v511", "d113", "v201", "v715", "v714")
-controls_men <- c("mv035", "mv133", "mv212")
+controls_men <- c("mv035", "mv133", "mv212", "mv190a", "sm190s", "mv714") ##added also the wealth indices
+outcomes_dec <- c("v739", "v743a", "v743b", "v743d", "v743f", "autonomy_index", "autonomy_dummy") 
+outcomes_ipv <- c("d106", "d107", "d108", "d129")
+outcomes_work <- c("v714", "v714a")
 
 
 
-# Calculate unweighted counts by group
-group_counts <- data_2019 %>%
+# Calculate unweighted counts by group (for men and for women)
+group_counts_women <- data_2019 %>%
   filter(!is.na(combined_group)) %>%
   count(combined_group) %>%
   arrange(combined_group)
 
-data_men <- data_2019 %>% filter(!is.na(mv021))
+
+data_men <- data_2019 %>% filter(!is.na(mv021)) #needed to create a separate dataset for men's survey later on 
+
+group_counts_men <- data_men %>%
+  filter(!is.na(combined_group)) %>%
+  count(combined_group) %>%
+  arrange(combined_group)
+
 
 mysurvey_men <- svydesign(
   id = ~mv021, 
@@ -159,17 +188,18 @@ desc_table_1 <- mysurvey_women %>%
       all_categorical() ~ "{n} ({p}%)"
     ),
     digits = all_continuous() ~ 3,
-    missing = "no"
+    missing = "no",
+    percent = "column"
   ) %>%
   modify_caption("**Table 1. Survey-Weighted Descriptives for Women & Household**") %>%
   modify_header(
-    stat_1 ~ paste0("**Control District × Ineligible**  \nN = ", group_counts$n[1]),
-    stat_2 ~ paste0("**Treated District × Ineligible**  \nN = ", group_counts$n[2]), 
-    stat_3 ~ paste0("**Control District × Eligible**  \nN = ", group_counts$n[3]),
-    stat_4 ~ paste0("**Treated District × Eligible**  \nN = ", group_counts$n[4])
+    stat_1 ~ paste0("**Control District × Ineligible**  \nN = ", group_counts_women$n[1]),
+    stat_2 ~ paste0("**Treated District × Ineligible**  \nN = ", group_counts_women$n[2]), 
+    stat_3 ~ paste0("**Control District × Eligible**  \nN = ", group_counts_women$n[3]),
+    stat_4 ~ paste0("**Treated District × Eligible**  \nN = ", group_counts_women$n[4])
   ) %>%
-  modify_footnote(all_stat_cols() ~ "Mean (SD) for continuous variables; N (%) for categorical variables. N represents unweighted sample size.Wealth indices: 1 = Poorest, 5 = Richest. Sex of HH head: 1 = Male, 2 = Female. Binary variables: 0 = No, 1 = Yes, 7 = Not a dejure resident (where applicable). For all indicators based on the household members (PR file), either the de jure population (hv102 = 1) or the de facto population (hv103 = 1) is selected.")
-
+  modify_footnote(all_stat_cols() ~ "Weighted N (weighted %) shown. All statistics account for complex survey design. Mean (SD) for continuous variables; N (%) for categorical variables. N represents unweighted sample size.Wealth indices: 1 = Poorest, 5 = Richest. Sex of HH head: 1 = Male, 2 = Female. Binary variables: 0 = No, 1 = Yes, 7 = Not a dejure resident (where applicable). (usual resident of the house) or the de facto population (slept at the home last night) is selected."
+  ) 
 desc_table_1 %>% as_gt()
 
 
@@ -184,29 +214,21 @@ desc_table_2 <- mysurvey_men %>%
       all_categorical() ~ "{n} ({p}%)"
     ),
     digits = all_continuous() ~ 3,
-    missing = "no"
+    missing = "no", 
+    percent = "column"
   ) %>%
-  add_n() %>% 
   modify_caption("**Table 2. Survey-Weighted Descriptives for Men**") %>%
   modify_header(
-    stat_1 ~ paste0("**Control District × Ineligible**  \nN = ", group_counts$n[1]),
-    stat_2 ~ paste0("**Treated District × Ineligible**  \nN = ", group_counts$n[2]), 
-    stat_3 ~ paste0("**Control District × Eligible**  \nN = ", group_counts$n[3]),
-    stat_4 ~ paste0("**Treated District × Eligible**  \nN = ", group_counts$n[4])
+    stat_1 ~ paste0("**Control District × Ineligible**  \nN = ", group_counts_men$n[1]),
+    stat_2 ~ paste0("**Treated District × Ineligible**  \nN = ", group_counts_men$n[2]), 
+    stat_3 ~ paste0("**Control District × Eligible**  \nN = ", group_counts_men$n[3]),
+    stat_4 ~ paste0("**Treated District × Eligible**  \nN = ", group_counts_men$n[4])
   ) %>%
-  modify_footnote(all_stat_cols() ~ "Mean (SD) for continuous variables; N (%) for categorical variables. 0 = no, 1 = yes for binary variables.")
+  modify_footnote(all_stat_cols() ~ "Weighted N (weighted %) shown. All statistics account for complex survey design. Mean (SD) for continuous variables; N (%) for categorical variables. 0 = no, 1 = yes for binary variables.Wealth indices: 1 = Poorest, 5 = Richest.")
 desc_table_2 %>% as_gt() 
 
-## Testing Parallel Trends Assumption ##
-##graphs? visual representation? 
-## DiD ## 
-## Decision Making models ##
-# the Fixed Effects Difference-in-Differences model, authors use district fixed effects, absorbs the constant? 
-# using the 'svyglm' function for survey-weighted regression, 
-# svyglm() models the probability that the outcome is at the non-reference level, if the outcome is a factor, 
-# or the probability that the outcome is 1, if the outcome is numeric with values 0 and 1
 # Define outcomes
-outcomes_dec <- c("v739", "v743a", "v743b", "v743d", "v743f") 
+outcomes_dec <- c("v739", "v743a", "v743b", "v743d", "v743f", "autonomy_index", "autonomy_dummy") 
 
 # Run models
 model_results_1 <- list()
@@ -215,7 +237,7 @@ for (i in outcomes_dec) {
   formula_i <- as.formula(paste0(i, " ~ eligibility_status * treated_district"))  # Simplified formula
   
   model_i <- tryCatch({
-    svyglm(formula_i, design = mysurvey_women)  # Removed redundant data argument
+    svyglm(formula_i, design = mysurvey_women)  
   }, 
   error = function(e) {
     message(paste("Error fitting model for", i, ":", e$message)) 
@@ -233,8 +255,10 @@ custom_labels <- c(
   "Own Healthcare", 
   "Large Purchases",
   "Visiting Family",      
-  "Husband's Money"  
-)
+  "Husband's Money",
+  "Autonomy Index",
+  "Autonomy Dummy"
+  )
 
 # Create regression tables and merge
 tbl_list <- lapply(model_results_1, function(model) {  # Simplified - iterate directly over models
@@ -258,14 +282,13 @@ tbl_merge(
   tbls = tbl_list,
   tab_spanner = custom_labels
 ) %>%
-  modify_caption("Survey-Weighted DiD Results, No Controls") %>%
+  modify_caption("Survey-Weighted DiD Results: Women's Decision-making, No Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. The interaction term 'eligibility_status × treated_district' represents the difference-in-differences estimate of program impact. Linear regression used for all outcomes including the categorical questions relating to decision-making. Autonomy Index measures the proportion of affirmative responses across all five decision-making domains. Autonomy Dummy equals 1 if woman has say in any household decision. Both composite measures constructed only for women who answered all 5 decision-making questions. Survey weights applied using complex survey design."
   ) %>%
   as_flex_table()
 
-
-## DiD, with controls ##
+## DiD, decision-making with controls ##
 
 # Run models
 model_results_2 <- list()
@@ -312,9 +335,15 @@ tbl_merge(
   tbls = tbl_list,
   tab_spanner = custom_labels
 ) %>%
-  modify_caption("Survey-Weighted DiD Results, Controls") %>%
+  modify_caption("Survey-Weighted DiD Results: Women's Decision-making, Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'eligibility_status × treated_district' represents the difference-in-differences estimate of program impact.
+    Linear regression used for all outcomes including the categorical questions relating to decision-making. 
+    Autonomy Index measures the proportion of affirmative responses across all five decision-making domains. 
+    Autonomy Dummy equals 1 if woman has say in any household decision. 
+    Both composite measures constructed only for women who answered all 5 decision-making questions. 
+    Survey weights applied using complex survey design."
   ) %>%
   as_flex_table()
 
@@ -358,12 +387,11 @@ tbl_merge(
   tbls = tbl_list,
   tab_spanner = custom_2
 ) %>%
-  modify_caption("Survey-Weighted DiD Results, No Controls") %>%
+  modify_caption("Survey-Weighted DiD Results: Intimate Partner Violence Outcomes, No Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact. All outcomes are binary variables (1 = ever experienced, 0 = never experienced). Less Severe Violence (d106) includes: ever been pushed, shook, or had something thrown; ever been slapped; ever been punched with fist or hit by something harmful. Severe Violence (d107) includes: ever been kicked or dragged; ever been strangled or burnt; ever been threatened with knife/gun or other weapon. Sexual Violence (d108) includes: ever been physically forced into unwanted sex; ever been forced into other unwanted sexual acts; ever been physically forced to perform sexual acts respondent didn't want to. Afraid of Husband (d129): respondent is afraid of husband/partner most of the time or sometimes. Linear probability model used for binary outcomes. Survey weights applied using complex survey design. Sample restricted to ever-married women."
   ) %>%
   as_flex_table()
-
 
 ##Regressions with controls ##
 outcomes_ipv <- c("d106", "d107", "d108", "d129")
@@ -407,7 +435,14 @@ tbl_merge(
 ) %>%
   modify_caption("Survey-Weighted DiD Results, Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact. 
+    All outcomes are binary variables (1 = ever experienced, 0 = never experienced). 
+    Less Severe Violence (d106) includes: ever been pushed, shook, or had something thrown; ever been slapped; ever been punched with fist or hit by something harmful. 
+    Severe Violence (d107) includes: ever been kicked or dragged; ever been strangled or burnt; ever been threatened with knife/gun or other weapon. 
+    Sexual Violence (d108) includes: ever been physically forced into unwanted sex; ever been forced into other unwanted sexual acts; ever been physically forced to perform sexual acts respondent didn't want to. 
+    Afraid of Husband (d129): respondent is afraid of husband/partner most of the time or sometimes. 
+    Linear probability model used for binary outcomes. Survey weights applied using complex survey design. Sample restricted to ever-married women."
   ) %>%
   as_flex_table()
 
@@ -415,14 +450,11 @@ tbl_merge(
 outcomes_men_1 <-c("mv633a", "mv633b", "mv633d", "mv634a", "mv634b", "mv634c", "mv634d") ##wife can refuse sex
 outcomes_men_2 <-c("mv739", "mv743a", "mv743b") #person who decides on certain things
 outcomes_men_3 <-c("mv744a", "mv744b", "mv744c", "mv744d", "mv744e") #violence justified 
-custom_men_1 <-c("Refuse in case husband has sti", "Refuse in case husband has other women", "Refuse in case wife is tired", 
-                 "Refuse: right to get angry", "Refuse: right to withhold financial means", "Refuse: right to use force", 
-                 "Refuse, right to have sex with another woman")
-custom_men_1 <-c("Refuse sex in case husband has sti", "Refuse sex in case husband has other women", "Refuse sex in case wife is tired", 
-                 "Refuse sex: right to get angry", "Refuse sex: right to withhold financial means", "Refuse sex: right to use force", 
-                 "Refuse sex, right to have sex with another woman")
+custom_men_1 <-c("in case husband has sti", "in case husband has other women", "in case wife is tired", 
+                 "right to get angry", "right to withhold financial means", "right to use force", 
+                 "right to have sex with another woman")
 custom_men_2 <-c("Own Earnings", "Healthcare", "Large Purchases")
-custom_men_3 <-c("Justified: wife goes out without telling", "Justified: wife neglects the children", "Justified: wife argues with husband", "Justified: wife refuses to have sex", "Justified: wife burns food")
+custom_men_3 <-c("wife goes out without telling", "wife neglects the children", "wife argues with husband", "wife refuses to have sex", "wife burns food")
 
 ##Refusing sex Models without controls##
 model_results_5 <- list()
@@ -467,12 +499,14 @@ tbl_merge(
   tbls = tbl_list,
   tab_spanner = custom_men_1
 ) %>%
-  modify_caption("Survey-Weighted DiD Results, No Controls") %>%
+  modify_caption("Survey-Weighted DiD Results: Men's Attitudes Toward Women's Right to Refuse Sex, No Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact on husbands of eligible women. 
+    All outcomes are binary variables where 1 = agrees with statement, 0 = disagrees. Responses coded as 'don't know' (8) treated as missing. Linear probability model used for binary outcomes. 
+    Survey weights applied using complex survey design. Sample restricted to currently married men whose wives meet eligibility criteria."
   ) %>%
   as_flex_table()
-
 
 ##Decision making models without controls ##
 model_results_6 <- list()
@@ -519,13 +553,16 @@ tbl_merge(
   tbls = tbl_list,
   tab_spanner = custom_men_2
 ) %>%
-  modify_caption("Survey-Weighted DiD Results, No Controls") %>%
+  modify_caption("Survey-Weighted DiD Results, Men's Attitudes towards their own Decision-Making, No Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'eligibility_status × treated_district' represents the difference-in-differences estimate of program impact on husbands of eligible women.
+    Linear regression used for all outcomes including the categorical questions relating to decision-making. Survey weights applied using complex survey design. 
+    Sample restricted to currently married men whose wives meet eligibility criteria."
   ) %>%
   as_flex_table()
 
-## Violence models, without controls
+## Men Attitude towards Violence models, without controls
 model_results_7 <- list()
 
 for (i in outcomes_men_3) {
@@ -573,9 +610,13 @@ tbl_merge(
   tbls = tbl_list,
   tab_spanner = custom_men_3
 ) %>%
-  modify_caption("Survey-Weighted DiD Results, No Controls") %>%
+  modify_caption("Survey-Weighted DiD Results, Men's Attitudes towards Violence against Wives, No Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact on husbands of eligible women. 
+    All outcomes are binary variables where 1 = agrees with statement, 0 = disagrees. Responses coded as 'don't know' (8) treated as missing. 
+    Linear probability model used for binary outcomes. Survey weights applied using complex survey design. 
+    Sample restricted to currently married men whose wives meet eligibility criteria."
   ) %>%
   as_flex_table()
 
@@ -627,9 +668,12 @@ tbl_merge(
   tbls = tbl_list,
   tab_spanner = custom_men_1
 ) %>%
-  modify_caption("Survey-Weighted DiD Results, Controls") %>%
+  modify_caption("Survey-Weighted DiD Results: Men's Attitudes Toward Women's Right to Refuse Sex, No Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact on husbands of eligible women. 
+    All outcomes are binary variables where 1 = agrees with statement, 0 = disagrees. Responses coded as 'don't know' (8) treated as missing. Linear probability model used for binary outcomes. 
+    Survey weights applied using complex survey design. Sample restricted to currently married men whose wives meet eligibility criteria."
   ) %>%
   as_flex_table()
 
@@ -732,16 +776,22 @@ tbl_merge(
 ) %>%
   modify_caption("Survey-Weighted DiD Results, Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact on husbands of eligible women. 
+    All outcomes are binary variables where 1 = agrees with statement, 0 = disagrees. 
+    Responses coded as 'don't know' (8) treated as missing. 
+    Linear probability model used for binary outcomes. 
+    Survey weights applied using complex survey design. 
+    Sample restricted to currently married men whose wives meet eligibility criteria."
   ) %>%
   as_flex_table()
 
 
 
 ##Effects on Workforce Participation of Women## 
-outcomes_work <- c("v714", "v714a", "v746", "v731")
+outcomes_work <- c("v714", "v714a")
 model_results_11 <- list()
-custom_3 <- c("currently working", "has a job, currently absent", "earns more than husband", "worked in last 12 months")
+custom_3 <- c("currently working", "has a job, currently absent")
 
 for (i in outcomes_work) {
   formula_i <- as.formula(paste0(i, " ~ eligibility_status + treated_district * eligibility_status"))
@@ -788,7 +838,12 @@ tbl_merge(
 ) %>%
   modify_caption("Survey-Weighted DiD Results, No Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact. 
+    All outcomes are binary variables (1 = no, 0 = yes)
+    Linear probability model used for binary outcomes. 
+    Survey weights applied using complex survey design. 
+    Sample restricted to ever-married women only." 
   ) %>%
   as_flex_table()
 
@@ -840,7 +895,12 @@ tbl_merge(
 ) %>%
   modify_caption("Survey-Weighted DiD Results, Controls") %>%
   modify_footnote(
-    everything() ~ "Coefficients with standard errors in parentheses."
+    everything() ~ "Coefficients with standard errors (clustered at district level) in parentheses. 
+    The interaction term 'Eligibility × Treated' represents the difference-in-differences estimate of program impact. 
+    All outcomes are binary variables (1 = no, 0 = yes)
+    Linear probability model used for binary outcomes. 
+    Survey weights applied using complex survey design. 
+    Sample restricted to ever-married women only." 
   ) %>%
   as_flex_table()
 
@@ -884,7 +944,7 @@ balance_table <- balance_survey %>%
   modify_header(label = "**Characteristic**") %>%
   modify_caption("**Table 3. Balance Test: Comparison of Means (Pre-2011 Births Only)**")
 
-balance_table %>% as_gt() ##taking forever to run ugh
+balance_table %>% as_gt() 
 
 
 balance_table <- balance_survey %>%
@@ -927,60 +987,3 @@ print(balance_table, smd = TRUE)  # smd = standardized mean difference
 library(knitr)
 kable(print(balance_table, printToggle = FALSE))
 
-### Causal Graph ###
-library(ggdag)
-library(dagitty)
-
-library(ggdag)
-
-# Define DAG for your CCT study
-cct_dag <- dagify(
-  # Main causal pathways
-  empowerment ~ cct + income + health + education + norms,
-  ipv ~ cct + empowerment + income + norms + poverty,
-  
-  # Mediating pathways (how CCT works)
-  income ~ cct,
-  health ~ cct,
-  education ~ cct,
-  
-  # What determines CCT rollout (confounders)
-  cct ~ poverty + norms + infrastructure + politics,
-  
-  # Other relationships
-  empowerment ~ health + education,
-  
-  # Define treatment and outcomes
-  exposure = "cct",
-  outcome = c("empowerment", "ipv"),
-  
-  # Labels for readability
-  labels = c(
-    cct = "CCT\nProgram",
-    empowerment = "Women's\nEmpowerment",
-    ipv = "Intimate\nPartner\nViolence",
-    income = "Household\nIncome",
-    health = "Health\nServices\nUse",
-    education = "Children's\nEducation",
-    poverty = "District\nPoverty",
-    norms = "Gender\nNorms",
-    infrastructure = "Infrastructure",
-    politics = "Political\nPriorities"
-  ),
-  
-  # Coordinates for layout (optional - helps arrange nodes nicely)
-  coords = list(
-    x = c(cct = 1, income = 2, health = 2, education = 2, 
-          empowerment = 3, ipv = 3, poverty = 0, norms = 0, 
-          infrastructure = 0, politics = 0),
-    y = c(cct = 0, income = 1, health = 0, education = -1,
-          empowerment = 0.5, ipv = -0.5, poverty = 1, norms = 0,
-          infrastructure = -1, politics = -2)
-  )
-)
-
-# Plot
-ggdag(cct_dag, text = FALSE, use_labels = "label") +
-  theme_void()
-
-ggdag_paths
