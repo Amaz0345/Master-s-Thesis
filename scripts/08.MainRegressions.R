@@ -43,31 +43,15 @@ for (i in outcomes_ipv) {
   if (!is.null(model_i)) model_results_4[[i]] <- model_i
 }
 
-# ============================================================
-#  Setting up for the men's regressions
-# ============================================================
-
-outcomes_men_1  <- c("mv633a", "mv633b", "mv633d", "mv634a", "mv634b", "mv634c", "mv634d")
-outcomes_men_1a <- c("mv633a", "mv633b", "mv633d", "mv634a")
-outcomes_men_1b <- c("mv634b", "mv634c", "mv634d")
-custom_men_1a   <- c("Refuse sex: husband has STI", "Refuse sex: husband has other women",
-                     "Refuse sex: wife is tired", "Refuse sex: right to get angry")
-custom_men_1b   <- c("Refuse sex: right to withhold financial means", "Refuse sex: right to use force",
-                     "Refuse sex: right to have sex with another woman")
-outcomes_men_2 <- c("mv739", "mv743a", "mv743b")
-custom_men_2   <- c("Own Earnings", "Healthcare", "Large Purchases")
-outcomes_men_3  <- c("mv744a", "mv744b", "mv744c", "mv744d", "mv744e")
-custom_men_3a   <- c("Justified: wife goes out without telling", "Justified: wife neglects the children", "Justified: wife argues with husband", "Justified: wife refuses to have sex", "Justified: wife burns food")
-
 
 # ============================================================
 #  MEN'S ATTITUDES: REFUSE SEX — WITH CONTROLS
 # ============================================================
+controls_all_men  <- c(controls_men, controls_hh)
+controls_formula  <- paste0(controls_all_men, collapse = " + ")
 
 model_results_8 <- list()
 for (i in outcomes_men_1) {
-  controls_all_men  <- c(controls_men, controls_hh)
-  controls_formula  <- paste0(controls_all_men, collapse = " + ")
   formula_i <- as.formula(paste0(i, " ~ eligibility_status + treated_district * eligibility_status + ", formula_controls_men))  
   model_i <- tryCatch({
     svyglm(formula_i, design = mysurvey_men)
@@ -153,40 +137,37 @@ make_fe_tbl <- function(models, title, col_names) {
 tbl_dec <- make_fe_tbl(
   model_results_2,
   "Survey Weighted GLM: Women's Decision-Making",
-  c("Own Earnings", "Own Healthcare", "Large Purchases", 
-    "Visiting Family", "Husband's Money", "Autonomy Index", "Autonomy Dummy")
+  get_labels(outcomes_dec)
 )
 
 tbl_ipv <- make_fe_tbl(
   model_results_4,
   "Survey Weighted GLM: Intimate Partner Violence",
-  c("Less Severe Violence", "Severe Violence", "Sexual Violence", "Afraid of Husband")
+  get_labels(outcomes_ipv)
 )
 
 tbl_work <- make_fe_tbl(
   model_results_12,
   "Survey Weighted GLM: Women's Economic Participation",
-  c("Currently Working", "Has Job Absent", "Earns More than Husband", "Worked Last 12 Months")
+  get_labels(outcomes_work)
 )
 
 tbl_men_refuse <- make_fe_tbl(
   model_results_8,
   "Survey Weighted GLM: Men's Attitudes — Right to Refuse Sex",
-  c("Husband has STI", "Husband has other women", "Wife is tired", 
-    "Right to get angry", "Withhold financial means", "Use force", "Sex with another woman")
+  get_labels(outcomes_men_1)
 )
 
 tbl_men_dec <- make_fe_tbl(
   model_results_9,
   "Survey Weighted GLM: Men's Decision-Making",
-  c("Own Earnings", "Healthcare", "Large Purchases")
+  get_labels(outcomes_men_2)
 )
 
 tbl_men_viol <- make_fe_tbl(
   model_results_10,
   "Survey Weighted GLM: Men's Attitudes — Violence Justified",
-  c("Goes out without telling", "Neglects children", 
-    "Argues with husband", "Refuses sex", "Burns food")
+  get_labels(outcomes_men_3)
 )
 
 # export all to one Word document

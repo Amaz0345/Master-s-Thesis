@@ -146,40 +146,37 @@ make_fe_latex <- function(models, title, col_names) {
 tbl_fe_dec <- make_fe_latex(
   fe_results_dec,
   "FE OLS Results: Women's Decision-Making",
-  c("Own Earnings", "Own Healthcare", "Large Purchases",
-    "Visiting Family", "Husband's Money", "Autonomy Index", "Autonomy Dummy")
+  get_labels(outcomes_dec)
 )
 
 tbl_fe_ipv <- make_fe_latex(
   fe_results_ipv,
   "FE OLS Results: Intimate Partner Violence",
-  c("Less Severe Violence", "Severe Violence", "Sexual Violence", "Afraid of Husband")
+  get_labels(outcomes_ipv)
 )
 
 tbl_fe_work <- make_fe_latex(
   fe_results_work,
   "FE OLS Results: Women's Economic Participation",
-  c("Currently Working", "Has Job Absent", "Earns More than Husband", "Worked Last 12 Months")
+  get_labels(outcomes_work)
 )
 
 tbl_fe_men_1 <- make_fe_latex(
   fe_results_men_1,
   "FE OLS Results: Men's Attitudes --- Right to Refuse Sex",
-  c("Husband has STI", "Husband has other women", "Wife is tired",
-    "Right to get angry", "Withhold financial means", "Use force", "Sex with another woman")
+  get_labels(outcomes_men_1)
 )
 
 tbl_fe_men_2 <- make_fe_latex(
   fe_results_men_2,
   "FE OLS Results: Men's Decision-Making",
-  c("Own Earnings", "Healthcare", "Large Purchases")
+  get_labels(outcomes_men_2)
 )
 
 tbl_fe_men_3 <- make_fe_latex(
   fe_results_men_3,
   "FE OLS Results: Men's Attitudes --- Violence Justified",
-  c("Goes out without telling", "Neglects children",
-    "Argues with husband", "Refuses sex", "Burns food")
+  get_labels(outcomes_men_3)
 )
 
 # ── Write all to one .tex file ───────────────────────────────

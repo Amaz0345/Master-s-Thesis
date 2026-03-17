@@ -128,85 +128,85 @@ p <- ggplot() +
   
   # ── Labels: TOP BOX ─────────────────────────────────────
   annotate("text", x=10, y=12.75, label="INTERVENTION",
-           size=4.5, colour=col_top_bord, fontface="bold",
+           size=6.5, colour=col_top_bord, fontface="bold",
            family="sans", hjust=0.5, vjust=0.5, letter_spacing=2) +
   annotate("text", x=10, y=12.25, label="Cash Transfer Programme",
-           size=7.0, colour=col_text, fontface="bold",
+           size=7.5, colour=col_text, fontface="bold",
            family="sans", hjust=0.5, vjust=0.5) +
   annotate("text", x=10, y=11.85,
            label="Direct financial transfer to women in the household",
-           size=4.5, colour=col_muted, family="sans", hjust=0.5, vjust=0.5) +
+           size=5.5, colour=col_muted, family="sans", hjust=0.5, vjust=0.5) +
   
   # ── Labels: MID BOX ─────────────────────────────────────
   annotate("text", x=10, y=10.25,
            label="Women's Bargaining Power Increases",
-           size=5.0, colour=col_text, fontface="bold",
+           size=7.0, colour=col_text, fontface="bold",
            family="sans", hjust=0.5, vjust=0.5) +
   annotate("text", x=10, y=9.7,
            label="Improved economic conditions strengthen women's\nnegotiating position within the household",
-           size=5.0, colour=col_muted, family="sans", hjust=0.5, vjust=0.5) +
+           size=6.0, colour=col_muted, family="sans", hjust=0.5, vjust=0.5) +
   
   # ── Pathway labels on fork ───────────────────────────────
   annotate("text", x=4.8,  y=10.75, label="PATHWAY A",
-           size=4.5, colour=col_teal, fontface="bold", family="sans") +
+           size=5.5, colour=col_teal, fontface="bold", family="sans") +
   annotate("text", x=15.2, y=10.75, label="PATHWAY B",
-           size=4.5, colour=col_red,  fontface="bold", family="sans") +
+           size=5.5, colour=col_red,  fontface="bold", family="sans") +
   
   # ── PATHWAY A box text ───────────────────────────────────
   annotate("text", x=4.8, y=7.25,
            label="Acceptance & Adaptation",
-           size=5.5, colour=col_teal, fontface="bold",
+           size=7.5, colour=col_teal, fontface="bold",
            family="sans", hjust=0.5) +
   annotate("text", x=4.8, y=6.65,
            label="Male Acceptance Mechanism",
-           size=4.5, colour=col_teal, family="sans", hjust=0.5,
+           size=5.5, colour=col_teal, family="sans", hjust=0.5,
            fontface="italic") +
   annotate("text", x=4.8, y=5.85,
            label="Women assert greater agency as economic\ndependence on male partner decreases.",
-           size=4.5, colour=col_muted, family="sans", hjust=0.5) +
+           size=6.5, colour=col_muted, family="sans", hjust=0.5) +
   annotate("text", x=4.8, y=4.85,
            label="Men adapt to the shift in household dynamics,\naccepting rebalancing of power without\nperceiving it as a threat to their status.",
-           size=4.5, colour=col_muted, family="sans", hjust=0.5) +
+           size=6.5, colour=col_muted, family="sans", hjust=0.5) +
   annotate("text", x=4.8, y=3.65,
            label="Reduced financial stress diminishes\nconflict triggers; household cooperation\nimproves.",
-           size=4.5, colour=col_muted, family="sans", hjust=0.5) +
+           size=6.5, colour=col_muted, family="sans", hjust=0.5) +
   
   # ── PATHWAY B box text ───────────────────────────────────
   annotate("text", x=15.2, y=7.25,
            label="Resistance & Reprisal",
-           size=4.0, colour=col_red, fontface="bold",
+           size=7.5, colour=col_red, fontface="bold",
            family="sans", hjust=0.5) +
   annotate("text", x=15.2, y=6.65,
            label="Male Backlash Mechanism",
-           size=5.0, colour=col_red, family="sans", hjust=0.5,
+           size=5.5, colour=col_red, family="sans", hjust=0.5,
            fontface="italic") +
   annotate("text", x=15.2, y=5.85,
            label="Women attempt to assert agency and\nrenegotiate power, challenging existing\ngender norms.",
-           size=4.0, colour=col_muted, family="sans", hjust=0.5) +
+           size=6.5, colour=col_muted, family="sans", hjust=0.5) +
   annotate("text", x=15.2, y=4.75,
            label="Men perceive the shift as a threat to\nmasculine identity and household authority,\nresponding with resistance and coercive control.",
-           size=4.0, colour=col_muted, family="sans", hjust=0.5) +
+           size=6.5, colour=col_muted, family="sans", hjust=0.5) +
   annotate("text", x=15.2, y=3.65,
            label="Violence is used instrumentally to\nreassert dominance and punish women\nfor challenging the power hierarchy.",
-           size=4.0, colour=col_muted, family="sans", hjust=0.5) +
+           size=6.5, colour=col_muted, family="sans", hjust=0.5) +
   
   # ── OUTCOME A ────────────────────────────────────────────
   annotate("text", x=4.8, y=1.1,
            label="IPV DECREASES",
-           size=5.8, colour=col_teal, fontface="bold",
+           size=7.0, colour=col_teal, fontface="bold",
            family="sans", hjust=0.5) +
   annotate("text", x=4.8, y=0.6,
            label="Economic empowerment → reduced violence",
-           size=4.5, colour=col_teal, family="sans", hjust=0.5) +
+           size=5.5, colour=col_teal, family="sans", hjust=0.5) +
   
   # ── OUTCOME B ────────────────────────────────────────────
   annotate("text", x=15.2, y=1.1,
            label="IPV INCREASES",
-           size=5.8, colour=col_red, fontface="bold",
+           size=7.0, colour=col_red, fontface="bold",
            family="sans", hjust=0.5) +
   annotate("text", x=15.2, y=0.6,
            label="Backlash effect — women face reprisals for empowerment",
-           size=4.5, colour=col_red, family="sans", hjust=0.5) +
+           size=5.5, colour=col_red, family="sans", hjust=0.5) +
   
   # ── Caption / references ─────────────────────────────────
   labs(
@@ -233,13 +233,13 @@ p <- ggplot() +
 
 # ── Save ─────────────────────────────────────────────────────
 ggsave(
-  filename = file.path(output_dir, "ipv_cashtransfers_figure.png"),  
+  filename = file.path(output_dir, "fig.3.png"),  
   plot     = p,
   width    = W,
   height   = H,
-  dpi      = 300,
+  dpi      = 500,
   bg       = "white"
 )
 
-message("Saved: ipv_cashtransfers_figure.png") ## used AI a lot for this one tbh
+message("Saved: fig.3.png") ## used AI a lot for this one tbh
 ############################################# END ###################################################

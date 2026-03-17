@@ -151,8 +151,49 @@ formula_controls_men   <- paste(c(controls_men,   controls_hh), collapse = " + "
 # Outcome variable lists
 outcomes_dec  <- c("v739","v743a","v743b","v743d","v743f","autonomy_index","autonomy_dummy")
 outcomes_ipv  <- c("d106","d107","d108","d129")
-outcomes_work <- c("v714","v714a")
+outcomes_work <- c("v714", "v714a", "v746", "v731")
+outcomes_men_1  <- c("mv633a", "mv633b", "mv633d", "mv634a", "mv634b", "mv634c", "mv634d")
+outcomes_men_2 <- c("mv739", "mv743a", "mv743b")
+outcomes_men_3  <- c("mv744a", "mv744b", "mv744c", "mv744d", "mv744e")
 
+
+outcome_labels <- c(
+  "v739"  = "Own Earnings",
+  "v743a" = "Own Healthcare",
+  "v743b" = "Large Purchases",
+  "v743d" = "Visiting Family", 
+  "v743f" = "Husband's Money",
+  "autonomy_index" = "Autonomy Index",
+  "autonomy_dummy" = "Autonomy Dummy",
+  "d106"  = "Less Severe Violence",
+  "d107"  = "Severe Violence",
+  "d108" = "Sexual Violence", 
+  "d129" = "Afraid of Husband", 
+  "v714" = "Currently Working",
+  "v714a" = "Has Job, Absent",
+  "v746" = "Earns more than husband",
+  "v731" = "Worked last 12 months",
+  "mv633a" = "Husband has STI", 
+  "mv633b" = "Husband has other women", 
+  "mv633d"= "Wife is Tired", 
+  "mv634a" = "to get angry", 
+  "mv634b"= "to withhold financial means", 
+  "mv634c"= "Use force", 
+  "mv634d" = "Sex with another woman", 
+  "mv739" = "Own Earnings", 
+  "mv743a" = "Healthcare", 
+  "mv743b" = "Large Purchases", 
+  "mv744a" = "Goes out without telling", 
+  "mv744b"= "Neglects children", 
+  "mv744c"= "Argues with Husband", 
+  "mv744d" = "Refuses sex", 
+  "mv744e" = "Burns food"
+)
+
+get_labels <- function(vars) {
+  labels <- outcome_labels[vars]
+  ifelse(is.na(labels), vars, labels)
+}
 # ============================================================
 #  SURVEY DESIGNS
 # ============================================================
@@ -206,5 +247,20 @@ fmt_tbl <- function(tbl, landscape = FALSE) {
     fontsize(size = 9, part = "header") %>%
     padding(padding = 3, part = "all") %>%
     set_table_properties(layout = "autofit")
+}
+
+# ============================================================
+#  VARIABLE COMPLETENESS CHECK
+# ============================================================
+
+# Verify all required variables are present before analysis
+all_vars <- c(controls_hh, controls_women, controls_men,
+              outcomes_dec, outcomes_ipv, outcomes_work)
+
+missing_vars <- setdiff(all_vars, names(data_2019))
+if (length(missing_vars) > 0) {
+  message("Missing variables: ", paste(missing_vars, collapse = ", "))
+} else {
+  message("All required variables present.")
 }
 ############################################# END ###################################################
