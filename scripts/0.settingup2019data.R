@@ -254,19 +254,42 @@ couples_2019 <- couples_2019 %>%
 
 ##now want to work with this dataframe, to display some characteristics and to display the summary stats 
 
-##left join for the man currently working variable 
+##left join for the men currently working variable, men's height and weight, men's household wealth characteristics
+##left join for the women's weight variable 
 
 data_2019 <- data_2019 %>%
   left_join(IAMR7EFL %>% select(mv001, mv002, mv003, mv714), 
             by = c("husband_cluster" = "mv001", 
                    "husband_hh" = "mv002", 
                    "husband_line" = "mv003"))
+
+men_missing <- read_dta("~/Uni/Thesis/Data and Scripts/Data/IAMR7EFL.DTA") %>%
+  select(mv001, mv002, mv003, sm190s, mv714, mv190a)
+
 data_2019 <- data_2019 %>%
-  left_join(IAMR7EFL %>% select(mv001, mv002, mv003, mv190a), 
+  left_join(men_missing, 
             by = c("husband_cluster" = "mv001", 
-                   "husband_hh" = "mv002", 
-                   "husband_line" = "mv003"))
-write_dta(data_2019, here("data", "2019_final.dta"))
+                   "husband_hh"      = "mv002", 
+                   "husband_line"    = "mv003"))
+women_missing <- read_dta("~/Uni/Thesis/Data and Scripts/Data/IAIR7EFL.dta") %>%
+  select(v001, v002, v003, v437, v438, v511)
+data_2019 <- data_2019 %>%
+  left_join(women_missing, 
+            by = c("v001" = "v001",  
+                  "v002" = "v002",
+                  "v003" = "v003"))
+write_dta(data_2019, "C:/Users/ananyama/Documents/Ananya Thesis/data/data_2019.dta")
+
+
+#All variables you want to check
+all_vars <- c(controls_hh, controls_women, controls_men,
+              outcomes_dec, outcomes_ipv, outcomes_work)
+
+missing_vars <- setdiff(all_vars, names(data_2019))
+missing_vars
+
+
+
 
 ##i also dropped women who are unmarried and below 19 years of age i think, but the code for that is missing lol
 
