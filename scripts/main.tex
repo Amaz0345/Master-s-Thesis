@@ -1,0 +1,324 @@
+\documentclass{article}        % the overall document type
+
+% --- Table packages ---
+\usepackage{booktabs}          % professional horizontal rules (\toprule, \midrule etc.)
+\usepackage{longtable}         % tables that can span multiple pages
+\usepackage{tabularray}        % modern table package (used for your FE results)
+\usepackage{multirow}          % lets cells span multiple rows
+\usepackage{siunitx}           % aligns numbers by decimal point in columns
+\UseTblrLibrary{booktabs}      % links tabularray with booktabs rules
+\UseTblrLibrary{siunitx}       % links tabularray with siunitx alignment
+\usepackage{etoolbox}
+\usepackage{geometry}
+\AtBeginEnvironment{longtable}{\footnotesize}
+
+% --- Layout packages ---
+\usepackage{pdflscape}         % rotates pages sideways for wide tables
+\geometry{a4paper, margin=1cm, includefoot}
+\usepackage{caption}           % controls caption formatting
+
+
+\captionsetup[table]{
+  labelfont = bf,        % "Table A1" in bold
+  textfont  = it,        % title in italics
+  singlelinecheck = false,
+  justification = raggedright  % APA 7 aligns captions left
+}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  
+  {\Large \textbf{Appendix}} \\[1cm]
+  
+  {\large Assessing the impact of a conditional cash transfer program in India \\ 
+  on women's empowerment using a matched difference-in-differences approach} \\[1cm]
+  
+  {\normalsize Ananya Mazumder} \\[0.5cm]
+  {\normalsize March 2026}
+  
+\end{titlepage}
+
+\section{Balance Table}
+
+\begin{landscape}
+\fontsize{7pt}{8pt}\selectfont
+
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{@{}p{6cm}p{2.5cm}p{2.5cm}p{2.5cm}p{2.5cm}p{1.5cm}@{}}
+\caption{Balance Table: Pre-2011 Characteristics}
+\label{tab:balance} \\
+
+% --- First page header ---
+\toprule
+ & \multicolumn{2}{c}{\textbf{Comparison Districts}} 
+ & \multicolumn{2}{c}{\textbf{Treatment Districts}} &  \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Characteristic} 
+  & \textbf{Non-eligible}\textsuperscript{1} 
+  & \textbf{Eligible}\textsuperscript{1} 
+  & \textbf{Non-eligible}\textsuperscript{1} 
+  & \textbf{Eligible}\textsuperscript{1} 
+  & \textbf{p-value}\textsuperscript{2} \\
+\midrule
+\endfirsthead
+
+% --- Subsequent page header ---
+\multicolumn{6}{l}{\small\textit{Table A1 continued}} \\[4pt]
+\toprule
+ & \multicolumn{2}{c}{\textbf{Comparison Districts}} 
+ & \multicolumn{2}{c}{\textbf{Treatment Districts}} &  \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Characteristic} 
+  & \textbf{Non-eligible}\textsuperscript{1} 
+  & \textbf{Eligible}\textsuperscript{1} 
+  & \textbf{Non-eligible}\textsuperscript{1} 
+  & \textbf{Eligible}\textsuperscript{1} 
+  & \textbf{p-value}\textsuperscript{2} \\
+\midrule
+\endhead
+
+
+% --- Footer on all but last page ---
+\midrule
+\multicolumn{6}{r}{\small\textit{Continued on next page}} \\
+\endfoot
+
+% --- Last page footer with notes ---
+\bottomrule
+\multicolumn{6}{l}{%
+  \begin{minipage}{24cm}
+  \vspace{4pt}
+  \footnotesize
+  \textit{Notes:} Sample restricted to women whose first or second child was born before 2011.
+  Eligible cohort defined as women meeting IGMSY birth order and age eligibility criteria.
+  Survey design accounts for stratification and clustering at the PSU level.
+  \smallskip
+
+  \textsuperscript{1} Means shown for continuous variables; proportions shown for categorical variables.
+  Survey-weighted estimates using DHS complex survey design.
+  \smallskip
+
+  \textsuperscript{2} P-values from survey-weighted Kruskal--Wallis tests (continuous variables) and
+  Rao--Scott adjusted Pearson $\chi^2$ tests (categorical variables), testing for differences across
+  all four groups jointly. A p-value $>$ 0.05 indicates balance between groups.
+  \vspace{4pt}
+  \end{minipage}%
+} \\
+\endlastfoot
+
+% =====================================================================
+% TABLE BODY
+% =====================================================================
+
+\addlinespace[3pt]
+\multicolumn{6}{l}{\textit{Panel A: Women's Decision-Making}} \\[2pt]
+
+\quad Decision-maker for own earnings        &        &        &        &        & 0.95  \\
+\quad\quad Respondent alone                  & 20\%   & 15\%   & 17\%   & 17\%   &       \\
+\quad\quad Respondent \& husband             & 67\%   & 73\%   & 74\%   & 68\%   &       \\
+\quad\quad Husband alone                     & 14\%   & 11\%   & 8.7\%  & 14\%   &       \\
+\quad\quad Other                             & 0\%    & 0.4\%  & 0\%    & 0.4\%  &       \\[4pt]
+
+\quad Decision-maker for own healthcare      &        &        &        &        & 0.17  \\
+\quad\quad Respondent alone                  & 8.9\%  & 14\%   & 7.9\%  & 12\%   &       \\
+\quad\quad Respondent \& husband             & 71\%   & 71\%   & 76\%   & 75\%   &       \\
+\quad\quad Husband alone                     & 20\%   & 14\%   & 15\%   & 12\%   &       \\
+\quad\quad Other                             & 0.1\%  & 0.7\%  & 0.3\%  & 0.4\%  &       \\[4pt]
+
+\quad Decision-maker for large purchases     &        &        &        &        & 0.26  \\
+\quad\quad Respondent alone                  & 8.2\%  & 8.0\%  & 8.8\%  & 11\%   &       \\
+\quad\quad Respondent \& husband             & 71\%   & 76\%   & 74\%   & 74\%   &       \\
+\quad\quad Husband alone                     & 21\%   & 14\%   & 14\%   & 13\%   &       \\
+\quad\quad Other                             & 0\%    & 2.1\%  & 2.9\%  & 1.7\%  &       \\[4pt]
+
+\quad Decision-maker for visiting family     &        &        &        &        & 0.16  \\
+\quad\quad Respondent alone                  & 7.0\%  & 9.2\%  & 5.1\%  & 9.4\%  &       \\
+\quad\quad Respondent \& husband             & 75\%   & 76\%   & 82\%   & 79\%   &       \\
+\quad\quad Husband alone                     & 18\%   & 14\%   & 12\%   & 10\%   &       \\
+\quad\quad Other                             & 0\%    & 1.4\%  & 1.6\%  & 1.0\%  &       \\[4pt]
+
+\quad Decision-maker for husband's money     &        &        &        &        & 0.17  \\
+\quad\quad Respondent alone                  & 4.1\%  & 7.7\%  & 3.1\%  & 6.4\%  &       \\
+\quad\quad Respondent \& husband             & 73\%   & 71\%   & 79\%   & 75\%   &       \\
+\quad\quad Husband alone                     & 22\%   & 19\%   & 17\%   & 18\%   &       \\
+\quad\quad Other                             & 0.5\%  & 1.8\%  & 0.4\%  & 0.4\%  &       \\[4pt]
+
+\quad Autonomy index (mean)                  & 0.86   & 0.87   & 0.90   & 0.89   & 0.14  \\
+\quad Autonomy dummy (has any say)           & 92\%   & 94\%   & 93\%   & 98\%   & 0.081 \\[6pt]
+
+% -------
+\multicolumn{6}{l}{\textit{Panel B: Labour Market Outcomes}} \\[2pt]
+
+\quad Currently working                      & 34\%   & 35\%   & 24\%   & 32\%   & 0.047 \\
+\quad Has job but currently absent           & 0\%    & 0.6\%  & 1.6\%  & 0.9\%  & 0.42  \\
+\quad Worked in last 12 months               &        &        &        &        & 0.067 \\
+\quad\quad Did not work                      & 59\%   & 59\%   & 67\%   & 59\%   &       \\
+\quad\quad Worked whole year                 & 34\%   & 35\%   & 22\%   & 31\%   &       \\
+\quad\quad Worked part of year               & 6.4\%  & 5.8\%  & 9.5\%  & 8.9\%  &       \\
+\quad\quad Seasonal work only                & 0\%    & 0.4\%  & 1.2\%  & 0.6\%  &       \\
+\quad Earnings relative to husband           &        &        &        &        & 0.78  \\
+\quad\quad More than husband                 & 17\%   & 16\%   & 15\%   & 18\%   &       \\
+\quad\quad Less than husband                 & 52\%   & 54\%   & 58\%   & 58\%   &       \\
+\quad\quad About the same                    & 23\%   & 18\%   & 22\%   & 19\%   &       \\
+\quad\quad Not working                       & 7.7\%  & 11\%   & 4.5\%  & 5.0\%  &       \\[6pt]
+
+% -------
+\multicolumn{6}{l}{\textit{Panel C: Intimate Partner Violence}} \\[2pt]
+
+\quad Any less severe physical violence      & 22\%   & 32\%   & 24\%   & 30\%   & 0.043 \\
+\quad Any severe physical violence           & 5.4\%  & 9.9\%  & 5.9\%  & 11\%   & 0.11  \\
+\quad Any sexual violence                    & 6.0\%  & 6.5\%  & 5.7\%  & 5.1\%  & 0.87  \\
+\quad Fear of husband                        &        &        &        &        & 0.15  \\
+\quad\quad Most of the time                  & 24\%   & 23\%   & 23\%   & 28\%   &       \\
+\quad\quad Sometimes                         & 8.5\%  & 10\%   & 14\%   & 14\%   &       \\
+\quad\quad Never                             & 67\%   & 67\%   & 63\%   & 58\%   &       \\[6pt]
+
+% -------
+\multicolumn{6}{l}{\textit{Panel D: Household \& Individual Controls}} \\[2pt]
+
+\quad Ethnicity                              &        &        &        &        & $<$0.001 \\
+\quad\quad Caste                             & 86\%   & 87\%   & 82\%   & 83\%   &          \\
+\quad\quad Tribe                             & 9.5\%  & 8.6\%  & 8.9\%  & 9.8\%  &          \\
+\quad\quad No caste/tribe                    & 3.5\%  & 3.7\%  & 7.3\%  & 6.0\%  &          \\
+\quad\quad Don't know                        & 0.9\%  & 0.5\%  & 1.3\%  & 1.0\%  &          \\[4pt]
+
+\quad Household size                         & 5.63   & 5.38   & 5.69   & 5.16   & $<$0.001 \\
+\quad Children under 5 in household         &        &        &        &        & $<$0.001 \\
+\quad\quad 0                                 & 66\%   & 91\%   & 66\%   & 93\%   &          \\
+\quad\quad 1                                 & 30\%   & 6.3\%  & 31\%   & 5.2\%  &          \\
+\quad\quad 2+                                & 3.1\%  & 2.9\%  & 3.5\%  & 1.9\%  &          \\[4pt]
+
+\quad Male-headed household                  & 81\%   & 82\%   & 85\%   & 85\%   & $<$0.001 \\
+\quad Age of household head                  & 46.61  & 47.40  & 45.86  & 46.94  & $<$0.001 \\[4pt]
+
+\quad Household assets                       &        &        &        &        &          \\
+\quad\quad Electricity                       & 95\%   & 96\%   & 96\%   & 96\%   & 0.21     \\
+\quad\quad Radio                             & 3.9\%  & 3.5\%  & 4.6\%  & 4.2\%  & 0.24     \\
+\quad\quad Television                        & 67\%   & 64\%   & 67\%   & 71\%   & $<$0.001 \\
+\quad\quad Refrigerator                      & 37\%   & 33\%   & 40\%   & 39\%   & $<$0.001 \\
+\quad\quad Bicycle                           & 59\%   & 64\%   & 58\%   & 62\%   & 0.005    \\
+\quad\quad Motorcycle/scooter                & 51\%   & 48\%   & 51\%   & 51\%   & 0.032    \\
+\quad\quad Car/truck                         & 9.0\%  & 7.5\%  & 9.9\%  & 9.0\%  & 0.044    \\[4pt]
+
+\quad Wealth index (combined)                &        &        &        &        & 0.59     \\
+\quad\quad Poorest                           & 32\%   & 25\%   & 25\%   & 25\%   &          \\
+\quad\quad Poorer                            & 12\%   & 21\%   & 17\%   & 20\%   &          \\
+\quad\quad Middle                            & 15\%   & 16\%   & 17\%   & 19\%   &          \\
+\quad\quad Richer                            & 18\%   & 18\%   & 19\%   & 15\%   &          \\
+\quad\quad Richest                           & 23\%   & 20\%   & 22\%   & 21\%   &          \\[4pt]
+
+\quad Wealth index (within state)            &        &        &        &        & 0.60     \\
+\quad\quad Poorest                           & 24\%   & 23\%   & 28\%   & 27\%   &          \\
+\quad\quad Poorer                            & 19\%   & 19\%   & 22\%   & 20\%   &          \\
+\quad\quad Middle                            & 16\%   & 21\%   & 18\%   & 21\%   &          \\
+\quad\quad Richer                            & 17\%   & 18\%   & 14\%   & 16\%   &          \\
+\quad\quad Richest                           & 24\%   & 17\%   & 17\%   & 16\%   &          \\[4pt]
+
+\quad Respondent's age                       & 34.29  & 38.07  & 33.87  & 37.47  & $<$0.001 \\
+\quad Years of education                     & 6.59   & 5.31   & 6.81   & 5.57   & $<$0.001 \\
+\quad Weight (kg)                            & 53.39  & 54.12  & 54.16  & 55.01  & $<$0.001 \\
+\quad Height (cm)                            & 151.76 & 151.62 & 151.71 & 152.03 & 0.029    \\
+\quad Age at first cohabitation              & 18.23  & 17.95  & 18.46  & 18.10  & $<$0.001 \\
+\quad Husband drinks alcohol                 & 28\%   & 33\%   & 32\%   & 30\%   & 0.63     \\
+\quad Total children ever born               & 2.88   & 3.06   & 2.77   & 2.81   & $<$0.001 \\
+\quad Husband's years of education           & 7.86   & 7.33   & 7.65   & 6.97   & 0.068    \\
+
+\end{longtable}
+
+\end{landscape}
+
+\newpage 
+
+\section{District Selection for IGMSY Pilot Program by Development Level}
+\begin{longtable}{@{}p{2.8cm}p{3.2cm}p{3.2cm}p{3.2cm}p{3.2cm}@{}}
+\label{tab:districts} \\
+
+\toprule
+ & \multicolumn{2}{c}{\textbf{Pilot}} & \multicolumn{2}{c}{\textbf{Control}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Development Level} & \textbf{District} & \textbf{State} & \textbf{District} & \textbf{State} \\
+\midrule
+\endfirsthead
+
+\multicolumn{5}{l}{\small\textit{Table 1 continued}} \\[4pt]
+\toprule
+ & \multicolumn{2}{c}{\textbf{Pilot}} & \multicolumn{2}{c}{\textbf{Control}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Development Level} & \textbf{District} & \textbf{State} & \textbf{District} & \textbf{State} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{5}{r}{\small\textit{Continued on next page}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+% --- LOW ---
+\multirow{10}{*}{\textit{Low}}
+  & Saharsa        & Bihar         & Katihar          & Bihar          \\
+  & Simdega        & Jharkhand     & Godda            & Jharkhand      \\
+  & Tamenglong     & Manipur       & Muzaffarnagar    & Uttar Pradesh  \\
+  & Vaishali       & Bihar         & Saran            & Bihar          \\
+  & Mahoba         & UP            & Azamgarh         & Uttar Pradesh  \\
+  & Sultanpur      & UP            & West Garo Hills  & Meghalaya      \\
+  & East Garo Hills & Meghalaya    & Banswara         & Rajasthan      \\
+  & Bhilwara       & Rajasthan     & Ukhrul           & Manipur        \\
+  & Udaipur        & Rajasthan     & Bilaspur         & Chhattisgarh   \\
+  & Dhalai         & Tripura       & ---              & ---            \\
+\addlinespace[6pt]
+
+% --- MIDDLE ---
+\multirow{19}{*}{\textit{Middle}}
+  & Bastar         & Chhattisgarh        & Tonk             & Rajasthan          \\
+  & Goalpara       & Assam               & Dhemaji          & Assam              \\
+  & Lawngtlai      & Mizoram             & Ranchi           & Jharkhand          \\
+  & Jalpaiguri     & West Bengal         & North Tripura    & Tripura            \\
+  & Bankura        & West Bengal         & Changlang        & Arunachal Pradesh  \\
+  & Papumpare      & Arunachal Pradesh   & Chamoli          & Uttarakhand        \\
+  & Dehradun       & Uttarakhand         & Puruliya         & West Bengal        \\
+  & Purbi Singhbhum & Jharkhand          & Durg             & Chhattisgarh       \\
+  & West District  & Sikkim              & Mamit            & Mizoram            \\
+  & North West Delhi & Delhi             & Dakshin Dinajpur & West Bengal        \\
+  & Dhamtari       & Chhattisgarh        & South Delhi      & Delhi              \\
+  & Panchkula      & Haryana             & South District   & Sikkim             \\
+  & Patan          & Gujarat             & Rewari           & Haryana            \\
+  & Kapurthala     & Punjab              & Fatehgarh Sahib  & Punjab             \\
+  & Kamrup         & Assam               & Valsad           & Gujarat            \\
+  & West Delhi     & Delhi               & Dibrugarh        & Assam              \\
+  & Bharuch        & Gujarat             & Kheda            & Gujarat            \\
+  & Nalgonda       & Telangana           & East Delhi       & Delhi              \\
+  & YSR            & Andhra Pradesh      & ---              & ---                \\
+\addlinespace[6pt]
+
+% --- HIGH ---
+\multirow{7}{*}{\textit{High}}
+  & Dharwad        & Karnataka           & Davangere        & Karnataka          \\
+  & Amritsar       & Punjab              & Bilaspur         & Himachal Pradesh   \\
+  & Kolar          & Karnataka           & Muktsar          & Punjab             \\
+  & West Godavari  & Andhra Pradesh      & Rangareddy       & Telangana          \\
+  & Hamirpur       & Himachal Pradesh    & Tumkur           & Karnataka          \\
+  & Palakkad       & Kerala              & Kozhikode        & Kerala             \\
+  & North Goa      & Goa                 & South Goa        & Goa                \\
+
+\bottomrule
+\end{longtable}
+
+\newpage
+\section{Survey Regressions (Without Controls)}
+\input{appendix_results}
+
+\newpage
+\section{Fixed Effects Regressions}
+\input{fe_results}
+
+\newpage
+\section{Robustness Checks}
+\input{appendix_robustness_checks}
+
+\end{document}
+
